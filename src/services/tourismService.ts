@@ -11,16 +11,38 @@ import {
   ServiceCategory,
   TourismService,
 } from '../types';
+import { API_CONFIG } from '../config/apiConfig';
+import { mockApiService } from './mockApiService';
 import { storageService } from './storageService';
 
 class TourismServiceManager {
   // ================= SERVICES =================
 
   async getAllServices(): Promise<TourismService[]> {
+    if (API_CONFIG.USE_MOCK_API) {
+      try {
+        const remoteList = await mockApiService.getServices();
+        if (remoteList && remoteList.length > 0) {
+          // Lưu cache vào local storage để khi offline vẫn mượt mà
+          await storageService.saveServices(remoteList);
+          return remoteList;
+        }
+      } catch (e) {
+        console.warn('MockAPI offline hoặc chưa clone, fallback dữ liệu nội bộ:', e);
+      }
+    }
     return await storageService.getServices();
   }
 
   async getServiceById(id: string): Promise<TourismService | null> {
+    if (API_CONFIG.USE_MOCK_API) {
+      try {
+        const remoteItem = await mockApiService.getServiceById(id);
+        if (remoteItem) return remoteItem;
+      } catch (e) {
+        // fallback to storage
+      }
+    }
     const list = await storageService.getServices();
     return list.find(s => s.id === id) || null;
   }
@@ -102,12 +124,32 @@ class TourismServiceManager {
       reviewCount: 0,
       createdAt: new Date().toISOString(),
     };
+
+    if (API_CONFIG.USE_MOCK_API) {
+      try {
+        const created = await mockApiService.createService(newService);
+        if (created && created.id) {
+          newService.id = String(created.id);
+        }
+      } catch (e) {
+        console.warn('MockAPI create error, saved locally instead:', e);
+      }
+    }
+
     list.unshift(newService);
     await storageService.saveServices(list);
     return newService;
   }
 
   async updateService(service: TourismService): Promise<void> {
+    if (API_CONFIG.USE_MOCK_API) {
+      try {
+        await mockApiService.updateService(service.id, service);
+      } catch (e) {
+        console.warn('MockAPI update error, updated locally instead:', e);
+      }
+    }
+
     const list = await storageService.getServices();
     const index = list.findIndex(s => s.id === service.id);
     if (index !== -1) {
@@ -117,6 +159,14 @@ class TourismServiceManager {
   }
 
   async deleteService(id: string): Promise<void> {
+    if (API_CONFIG.USE_MOCK_API) {
+      try {
+        await mockApiService.deleteService(id);
+      } catch (e) {
+        console.warn('MockAPI delete error, deleted locally instead:', e);
+      }
+    }
+
     const list = await storageService.getServices();
     const filtered = list.filter(s => s.id !== id);
     await storageService.saveServices(filtered);
@@ -125,7 +175,23 @@ class TourismServiceManager {
   // ================= CATEGORIES =================
 
   async getCategories(): Promise<ServiceCategory[]> {
-    const categories = await storageService.getCategories();
+    let categories: ServiceCategory[] = [];
+    if (API_CONFIG.USE_MOCK_API) {
+      try {
+        const remoteCats = await mockApiService.getCategories();
+        if (remoteCats && remoteCats.length > 0) {
+          categories = remoteCats;
+          await storageService.saveCategories(remoteCats);
+        }
+      } catch (e) {
+        // fallback to storage
+      }
+    }
+
+    if (categories.length === 0) {
+      categories = await storageService.getCategories();
+    }
+
     const services = await storageService.getServices();
 
     // augment with item counts

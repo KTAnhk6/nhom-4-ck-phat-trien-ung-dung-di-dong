@@ -20,6 +20,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useTourism } from '../../context/TourismContext';
 import { RatingStars } from '../../components/RatingStars';
 import { ServiceCard } from '../../components/ServiceCard';
+import { AdBanner } from '../../components/AdBanner';
 import { Review } from '../../types';
 import { tourismService } from '../../services/tourismService';
 
@@ -222,6 +223,9 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
           >
             <Text style={styles.writeReviewText}>✍️ {t('writeReview')}</Text>
           </TouchableOpacity>
+
+          {/* AdMob Contextual Banner */}
+          <AdBanner placement="detail" />
 
           {/* Related Destinations */}
           {relatedServices.length > 0 && (

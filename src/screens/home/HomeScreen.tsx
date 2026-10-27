@@ -3,8 +3,10 @@
  * Rich Dalat travel discovery hub with weather, featured spots, categories, and seasonal tips.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -27,7 +29,20 @@ export const HomeScreen: React.FC = () => {
     navigateToCategory,
     navigateToSearch,
     navigate,
+    refreshData,
   } = useTourism();
+
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+  const handleSyncMockApi = async () => {
+    setIsSyncing(true);
+    await refreshData();
+    setIsSyncing(false);
+    Alert.alert(
+      '✅ Đã đồng bộ MockAPI',
+      `Đã cập nhật dữ liệu trực tiếp từ MockAPI!\nHiện có ${services.length} điểm đến du lịch Đà Lạt đang hoạt động.`
+    );
+  };
 
   const featuredServices = services.filter(s => s.isFeatured);
   const topRatedServices = [...services].sort((a, b) => b.rating - a.rating).slice(0, 4);
@@ -83,6 +98,49 @@ export const HomeScreen: React.FC = () => {
         <Text style={styles.weatherTip}>
           💡 {language === 'vi' ? DALAT_WEATHER.travelTipVi : DALAT_WEATHER.travelTipEn}
         </Text>
+      </View>
+
+      {/* Quick Interactive Actions: MockAPI Live Sync & AdMob Voucher */}
+      <View style={styles.interactiveWidgetRow}>
+        <TouchableOpacity
+          style={[styles.interactiveChip, shadows.subtle]}
+          onPress={handleSyncMockApi}
+          activeOpacity={0.8}
+        >
+          {isSyncing ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
+            <Text style={styles.interactiveChipIcon}>🔄</Text>
+          )}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.interactiveChipTitle}>Đồng bộ MockAPI</Text>
+            <Text style={styles.interactiveChipSubtitle}>
+              {services.length} điểm đến • Chạm để làm mới
+            </Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.interactiveChip, styles.admobChip, shadows.subtle]}
+          onPress={() => {
+            Alert.alert(
+              '🎁 Quảng cáo AdMob Có Thưởng',
+              'Chạm vào banner [Khám phá ➔] ở chân màn hình để xem video AdMob 5s và nhận ngay Voucher du lịch 50.000đ!',
+              [{ text: 'Đã hiểu' }]
+            );
+          }}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.interactiveChipIcon}>🎁</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.interactiveChipTitle, { color: '#B45309' }]}>
+              Voucher AdMob
+            </Text>
+            <Text style={styles.interactiveChipSubtitle}>
+              Xem video nhận 50k
+            </Text>
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* 3. Horizontal Categories Bar */}
@@ -432,5 +490,41 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.textMuted,
     lineHeight: 16,
+  },
+  interactiveWidgetRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  interactiveChip: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.md,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  admobChip: {
+    backgroundColor: '#FFFDF0',
+    borderColor: '#FDE68A',
+  },
+  interactiveChipIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  interactiveChipTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  interactiveChipSubtitle: {
+    fontSize: 9,
+    color: colors.textMuted,
+    marginTop: 1,
   },
 });

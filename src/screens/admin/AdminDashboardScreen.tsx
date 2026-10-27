@@ -5,6 +5,9 @@
 
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,17 +20,70 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useTourism } from '../../context/TourismContext';
 import { useAuth } from '../../context/AuthContext';
 import { AdminStatsSummary, statsService } from '../../services/statsService';
+import { mockApiService } from '../../services/mockApiService';
+import { API_CONFIG, ADMOB_CONFIG } from '../../config/apiConfig';
+import { INITIAL_CATEGORIES, INITIAL_SERVICES } from '../../data/dalatData';
 
 export const AdminDashboardScreen: React.FC = () => {
   const { t } = useLanguage();
-  const { navigate, goBack } = useTourism();
+  const { navigate, goBack, refreshData } = useTourism();
   const { currentUser } = useAuth();
 
   const [stats, setStats] = useState<AdminStatsSummary | null>(null);
+  const [isTestingApi, setIsTestingApi] = useState<boolean>(false);
+  const [apiStatus, setApiStatus] = useState<'idle' | 'connected' | 'fallback'>('idle');
+  const [apiMessage, setApiMessage] = useState<string>('');
+  const [isSeeding, setIsSeeding] = useState<boolean>(false);
 
   useEffect(() => {
     statsService.getDashboardSummary().then(setStats);
   }, []);
+
+  const handleTestConnection = async () => {
+    setIsTestingApi(true);
+    const result = await mockApiService.checkConnection();
+    setIsTestingApi(false);
+    if (result.connected) {
+      setApiStatus('connected');
+      setApiMessage(result.message);
+      Alert.alert('Thành công', result.message);
+    } else {
+      setApiStatus('fallback');
+      setApiMessage(result.message);
+      Alert.alert(
+        'Chế độ dự phòng (Fallback)',
+        `${result.message}\n\nỨng dụng vẫn chạy mượt mà bằng cơ sở dữ liệu nội bộ (Local Storage). Sau khi bạn bấm Clone trên web MockAPI, dữ liệu sẽ tự động đồng bộ!`
+      );
+    }
+  };
+
+  const handleSeedData = async () => {
+    Alert.alert(
+      'Đẩy dữ liệu mẫu lên MockAPI',
+      `Thao tác này sẽ tải ${INITIAL_SERVICES.length} điểm du lịch và ${INITIAL_CATEGORIES.length} danh mục mẫu lên MockAPI. Bạn có chắc chắn không?`,
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Đồng bộ ngay',
+          onPress: async () => {
+            setIsSeeding(true);
+            try {
+              const res = await mockApiService.seedInitialData(INITIAL_SERVICES, INITIAL_CATEGORIES);
+              setIsSeeding(false);
+              await refreshData();
+              Alert.alert(
+                'Hoàn tất đồng bộ',
+                `Đã tải lên MockAPI:\n- ${res.servicesUploaded} dịch vụ\n- ${res.categoriesUploaded} danh mục!`
+              );
+            } catch (err: any) {
+              setIsSeeding(false);
+              Alert.alert('Lỗi đồng bộ', err.message || 'Không thể đồng bộ');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const adminModules = [
     {
@@ -117,6 +173,66 @@ export const AdminDashboardScreen: React.FC = () => {
             {stats?.averageRating || 5.0}★
           </Text>
           <Text style={styles.statLabel}>Điểm TB</Text>
+        </View>
+      </View>
+
+      {/* Tích hợp MockAPI & AdMob Status Card */}
+      <View style={[styles.integrationCard, shadows.card]}>
+        <View style={styles.integrationHeader}>
+          <Text style={styles.integrationTitle}>🔗 Tích hợp MockAPI & AdMob</Text>
+          <View
+            style={[
+              styles.statusPill,
+              apiStatus === 'connected' ? styles.statusPillSuccess : styles.statusPillFallback,
+            ]}
+          >
+            <Text
+              style={[
+                styles.statusPillText,
+                apiStatus === 'connected' ? styles.statusTextSuccess : styles.statusTextFallback,
+              ]}
+            >
+              {apiStatus === 'connected' ? 'MockAPI Online' : 'Local Fallback (Active)'}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={styles.endpointLabel}>Endpoint MockAPI:</Text>
+        <Text style={styles.endpointText} numberOfLines={1}>
+          {API_CONFIG.MOCK_API_BASE_URL}
+        </Text>
+
+        <View style={styles.actionButtonRow}>
+          <TouchableOpacity
+            style={[styles.btnAction, styles.btnTest]}
+            onPress={handleTestConnection}
+            disabled={isTestingApi}
+          >
+            {isTestingApi ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.btnActionText}>⚡ Kiểm tra API</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.btnAction, styles.btnSeed]}
+            onPress={handleSeedData}
+            disabled={isSeeding}
+          >
+            {isSeeding ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.btnActionText}>🚀 Đẩy dữ liệu mẫu</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.admobInfoRow}>
+          <Text style={styles.admobInfoText}>
+            📢 <Text style={{ fontWeight: '700' }}>AdMob Status:</Text>{' '}
+            {ADMOB_CONFIG.IS_ENABLED ? 'Đang bật' : 'Đang tắt'} • Unit ID: Test Banner (320x50)
+          </Text>
         </View>
       </View>
 
@@ -274,5 +390,93 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     marginTop: 4,
+  },
+  integrationCard: {
+    backgroundColor: colors.card,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  integrationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  integrationTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  statusPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  statusPillSuccess: {
+    backgroundColor: '#D1FAE5',
+  },
+  statusPillFallback: {
+    backgroundColor: '#FEF3C7',
+  },
+  statusPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  statusTextSuccess: {
+    color: '#065F46',
+  },
+  statusTextFallback: {
+    color: '#92400E',
+  },
+  endpointLabel: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  endpointText: {
+    fontSize: 11,
+    color: colors.text,
+    backgroundColor: '#F1F5F9',
+    padding: 6,
+    borderRadius: 6,
+    marginVertical: 6,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
+  actionButtonRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 6,
+  },
+  btnAction: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: borderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnTest: {
+    backgroundColor: colors.primary,
+  },
+  btnSeed: {
+    backgroundColor: colors.accent,
+  },
+  btnActionText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  admobInfoRow: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.borderLight,
+  },
+  admobInfoText: {
+    fontSize: 11,
+    color: colors.textMuted,
   },
 });
