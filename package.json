@@ -1,0 +1,42 @@
+{
+  "name": "dalat-travel-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "web": "vite",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "build": "vite build",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^3.1.1",
+    "@react-native/new-app-screen": "0.88.0",
+    "react": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-safe-area-context": "^5.5.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/runtime": "^7.25.0",
+    "@react-native-community/cli": "20.2.0",
+    "@react-native-community/cli-platform-android": "20.2.0",
+    "@react-native-community/cli-platform-ios": "20.2.0",
+    "@react-native/babel-preset": "0.88.0",
+    "@react-native/eslint-config": "0.88.0",
+    "@react-native/metro-config": "0.88.0",
+    "@react-native/typescript-config": "0.88.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "react-dom": "^19.3.0",
+    "react-native-web": "^0.21.4",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.4"
+  },
+  "engines": {
+    "node": ">= 22.11.0"
+  }
+}
