@@ -34,6 +34,7 @@ import { Header } from './src/components/Header';
 import { BottomNav } from './src/components/BottomNav';
 import { AdBanner } from './src/components/AdBanner';
 import { AppOpenAd } from './src/components/AppOpenAd';
+import { InterstitialAd } from './src/components/InterstitialAd';
 
 // Screens
 import { HomeScreen } from './src/screens/home/HomeScreen';
@@ -170,9 +171,10 @@ const MainNavigator: React.FC = () => {
     >
       {showHeader && <Header showBack={currentScreen.name !== 'HOME'} />}
       <View style={styles.screenContainer}>{renderActiveScreen()}</View>
-      {showBottomNav && <AdBanner placement="bottom_nav" />}
+      <AdBanner placement={showBottomNav ? 'bottom_nav' : 'bottom'} />
       {showBottomNav && <BottomNav />}
       <AppOpenAd />
+      <InterstitialAd />
     </View>
   );
 };

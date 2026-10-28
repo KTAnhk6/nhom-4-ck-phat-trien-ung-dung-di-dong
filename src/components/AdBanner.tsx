@@ -26,7 +26,7 @@ import { borderRadius, shadows, spacing } from '../theme/spacing';
 import { useTourism } from '../context/TourismContext';
 
 interface AdBannerProps {
-  placement?: 'bottom_nav' | 'inline' | 'detail';
+  placement?: 'bottom_nav' | 'bottom' | 'inline' | 'detail';
   style?: ViewStyle;
 }
 
@@ -34,9 +34,27 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   placement = 'bottom_nav',
   style,
 }) => {
-  const { services, navigateToDetail } = useTourism();
+  const {
+    services,
+    navigateToDetail,
+    getCooldownRemainingSeconds,
+    resetInterstitialCooldown,
+  } = useTourism();
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+
+  // Cập nhật đếm ngược cooldown của Interstitial Ads (Tối đa 1 lần / 3 phút)
+  useEffect(() => {
+    const update = () => {
+      if (getCooldownRemainingSeconds) {
+        setCooldownRemaining(getCooldownRemainingSeconds());
+      }
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [getCooldownRemainingSeconds]);
 
   // Rewarded Video Ad State
   const [isVideoPlaying, setIsVideoPlaying] = useState<boolean>(false);
@@ -58,7 +76,10 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     return () => clearTimeout(timer);
   }, [isVideoPlaying, countdown]);
 
-  if (!ADMOB_CONFIG.IS_ENABLED || isDismissed) {
+  if (
+    !ADMOB_CONFIG.IS_ENABLED ||
+    (isDismissed && placement !== 'bottom' && placement !== 'bottom_nav')
+  ) {
     return null;
   }
 
@@ -119,7 +140,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       <View
         style={[
           styles.webContainer,
-          placement === 'bottom_nav' && styles.bottomNavPlacement,
+          (placement === 'bottom_nav' || placement === 'bottom') && styles.bottomPlacement,
           placement === 'detail' && styles.detailPlacement,
           style,
         ]}
@@ -138,22 +159,36 @@ export const AdBanner: React.FC<AdBannerProps> = ({
               🌲 Tour Săn Mây Cầu Đất 4h30 sáng - Giảm 20%
             </Text>
             <Text style={styles.adSubtext} numberOfLines={1}>
-              Đà Lạt Wander Sponsor • Chạm để nhận Voucher & Quà tặng
+              {cooldownRemaining > 0
+                ? `⏱ Interstitial Ad: còn ${cooldownRemaining}s (Tối đa 3 phút/lần)`
+                : '✨ Google AdMob Banner • Chạm để nhận Voucher & Quà tặng'}
             </Text>
           </View>
 
-          <View style={styles.ctaButton}>
-            <Text style={styles.ctaText}>Khám phá ➔</Text>
-          </View>
+          {cooldownRemaining > 0 ? (
+            <TouchableOpacity
+              style={styles.resetTestBtn}
+              onPress={resetInterstitialCooldown}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.resetTestBtnText}>🔄 Reset test</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.ctaButton}>
+              <Text style={styles.ctaText}>Khám phá ➔</Text>
+            </View>
+          )}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={() => setIsDismissed(true)}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={styles.closeText}>×</Text>
-        </TouchableOpacity>
+        {placement !== 'bottom' && placement !== 'bottom_nav' && (
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setIsDismissed(true)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={styles.closeText}>×</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* POPUP QUẢNG CÁO TƯƠNG TÁC ADMOB (INTERACTIVE MODAL) */}
@@ -308,6 +343,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
     backgroundColor: '#FFFDF5',
     borderTopColor: '#FDE68A',
+  },
+  bottomPlacement: {
+    borderBottomWidth: 0,
+    backgroundColor: '#FFFDF5',
+    borderTopWidth: 1,
+    borderTopColor: '#FDE68A',
+  },
+  resetTestBtn: {
+    backgroundColor: '#0D9488',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  resetTestBtnText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
   },
   detailPlacement: {
     marginVertical: 12,

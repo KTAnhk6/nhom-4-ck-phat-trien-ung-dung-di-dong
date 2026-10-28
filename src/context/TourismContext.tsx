@@ -15,6 +15,7 @@ import {
   TourismService,
 } from '../types';
 import { tourismService } from '../services/tourismService';
+import { ADMOB_CONFIG } from '../config/apiConfig';
 
 export const DEFAULT_FILTER: FilterOptions = {
   categoryId: 'ALL',
@@ -69,6 +70,12 @@ interface TourismContextType {
   deleteService: (id: string) => Promise<void>;
   addCategory: (nameVi: string, nameEn: string, icon: string, description: string) => Promise<ServiceCategory>;
   deleteCategory: (id: string) => Promise<{ success: boolean; inUseCount?: number }>;
+
+  // AdMob Interstitial Ads (Tối đa 1 lần / 3 phút khi chuyển trang)
+  isInterstitialVisible: boolean;
+  closeInterstitial: () => void;
+  resetInterstitialCooldown: () => void;
+  getCooldownRemainingSeconds: () => number;
 }
 
 const TourismContext = createContext<TourismContextType | undefined>(undefined);
@@ -89,6 +96,57 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Navigation Stack
   const [currentScreen, setCurrentScreen] = useState<ScreenState>({ name: 'HOME' });
   const [navigationStack, setNavigationStack] = useState<ScreenState[]>([{ name: 'HOME' }]);
+
+  // AdMob Interstitial State & Frequency Capping (Tối đa 1 lần / 3 phút)
+  const [lastInterstitialTime, setLastInterstitialTime] = useState<number>(0);
+  const [isInterstitialVisible, setIsInterstitialVisible] = useState<boolean>(false);
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+
+  const COOLDOWN_MS = ADMOB_CONFIG.INTERSTITIAL_COOLDOWN_MS || 3 * 60 * 1000;
+
+  const getCooldownRemainingSeconds = (): number => {
+    if (lastInterstitialTime === 0) return 0;
+    const elapsed = Date.now() - lastInterstitialTime;
+    const remaining = COOLDOWN_MS - elapsed;
+    return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
+  };
+
+  const resetInterstitialCooldown = () => {
+    setLastInterstitialTime(0);
+  };
+
+  const closeInterstitial = () => {
+    setIsInterstitialVisible(false);
+    setLastInterstitialTime(Date.now());
+    if (pendingNavigation) {
+      pendingNavigation();
+      setPendingNavigation(null);
+    }
+  };
+
+  // Hàm kiểm tra và kích hoạt Interstitial Ads khi ấn nút chuyển trang
+  const executeWithInterstitialCheck = (targetScreen: ScreenName, executeAction: () => void) => {
+    // Nếu chuyển sang chính trang hiện tại thì không hiện quảng cáo
+    if (currentScreen.name === targetScreen) {
+      executeAction();
+      return;
+    }
+
+    const now = Date.now();
+    const canShowAd =
+      ADMOB_CONFIG.IS_ENABLED &&
+      (lastInterstitialTime === 0 || now - lastInterstitialTime >= COOLDOWN_MS);
+
+    if (canShowAd) {
+      // 1. Lưu lại hành động chuyển trang
+      setPendingNavigation(() => executeAction);
+      // 2. Bật Interstitial Ad (người dùng tắt ad thì mới chuyển trang)
+      setIsInterstitialVisible(true);
+    } else {
+      // Nếu chưa đủ 3 phút từ lần hiện trước -> chuyển trang ngay
+      executeAction();
+    }
+  };
 
   const refreshData = async () => {
     setIsLoading(true);
@@ -125,9 +183,11 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Navigation methods
   const navigate = (screen: ScreenName, params?: Partial<ScreenState>) => {
-    const nextState: ScreenState = { name: screen, ...params };
-    setNavigationStack(prev => [...prev, nextState]);
-    setCurrentScreen(nextState);
+    executeWithInterstitialCheck(screen, () => {
+      const nextState: ScreenState = { name: screen, ...params };
+      setNavigationStack(prev => [...prev, nextState]);
+      setCurrentScreen(nextState);
+    });
   };
 
   const goBack = () => {
@@ -135,10 +195,14 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const nextStack = [...navigationStack];
       nextStack.pop();
       const previous = nextStack[nextStack.length - 1];
-      setNavigationStack(nextStack);
-      setCurrentScreen(previous);
+      executeWithInterstitialCheck(previous.name, () => {
+        setNavigationStack(nextStack);
+        setCurrentScreen(previous);
+      });
     } else {
-      setCurrentScreen({ name: 'HOME' });
+      executeWithInterstitialCheck('HOME', () => {
+        setCurrentScreen({ name: 'HOME' });
+      });
     }
   };
 
@@ -288,6 +352,10 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
         deleteService,
         addCategory,
         deleteCategory,
+        isInterstitialVisible,
+        closeInterstitial,
+        resetInterstitialCooldown,
+        getCooldownRemainingSeconds,
       }}
     >
       {children}
