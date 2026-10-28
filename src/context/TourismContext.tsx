@@ -3,7 +3,13 @@
  * Coordinates services, search, filter, favorites, notifications, and screen transitions.
  */
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import mobileAds, {
+  AdEventType,
+  InterstitialAd,
+  TestIds,
+} from 'react-native-google-mobile-ads';
 import {
   FilterOptions,
   NotificationItem,
@@ -97,55 +103,151 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentScreen, setCurrentScreen] = useState<ScreenState>({ name: 'HOME' });
   const [navigationStack, setNavigationStack] = useState<ScreenState[]>([{ name: 'HOME' }]);
 
-  // AdMob Interstitial State & Frequency Capping (Tối đa 1 lần / 3 phút)
+  // AdMob States (Theo chuẩn BinhGold24)
+  const [adsInitialized, setAdsInitialized] = useState<boolean>(false);
+  const [navigationPending, setNavigationPending] = useState<boolean>(false);
   const [lastInterstitialTime, setLastInterstitialTime] = useState<number>(0);
   const [isInterstitialVisible, setIsInterstitialVisible] = useState<boolean>(false);
-  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+
+  const interstitial = useMemo(
+    () =>
+      InterstitialAd.createForAdRequest(
+        ADMOB_CONFIG.IS_TEST_MODE ? TestIds.INTERSTITIAL : ADMOB_CONFIG.INTERSTITIAL_ID,
+        {
+          requestNonPersonalizedAdsOnly: true,
+        }
+      ),
+    []
+  );
+
+  const pendingNavigationRef = useRef<(() => void) | null>(null);
+  const lastInterstitialShownRef = useRef<number>(0);
+  const interstitialLoadedRef = useRef<boolean>(false);
+  const adsInitializedRef = useRef<boolean>(false);
+  const retryInterstitialRef = useRef<any>(null);
 
   const COOLDOWN_MS = ADMOB_CONFIG.INTERSTITIAL_COOLDOWN_MS || 3 * 60 * 1000;
+  const LAST_SHOWN_KEY = 'ads.lastInterstitialShownAt';
+
+  const finishPendingNavigation = useCallback(() => {
+    const pending = pendingNavigationRef.current;
+    if (pending === null) return;
+    pendingNavigationRef.current = null;
+    setNavigationPending(false);
+    setIsInterstitialVisible(false);
+    pending();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const unsubscribeLoaded = interstitial.addAdEventListener(AdEventType.LOADED, () => {
+      interstitialLoadedRef.current = true;
+      if (retryInterstitialRef.current) {
+        clearTimeout(retryInterstitialRef.current);
+        retryInterstitialRef.current = null;
+      }
+    });
+
+    const unsubscribeOpened = interstitial.addAdEventListener(AdEventType.OPENED, () => {
+      const shownAt = Date.now();
+      lastInterstitialShownRef.current = shownAt;
+      setLastInterstitialTime(shownAt);
+      AsyncStorage.setItem(LAST_SHOWN_KEY, String(shownAt)).catch(() => {});
+    });
+
+    const unsubscribeClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
+      interstitialLoadedRef.current = false;
+      finishPendingNavigation();
+      interstitial.load();
+    });
+
+    const unsubscribeError = interstitial.addAdEventListener(AdEventType.ERROR, (adError: any) => {
+      console.warn('Lỗi load Interstitial:', adError);
+      interstitialLoadedRef.current = false;
+      finishPendingNavigation();
+      if (active && !retryInterstitialRef.current) {
+        retryInterstitialRef.current = setTimeout(() => {
+          retryInterstitialRef.current = null;
+          interstitial.load();
+        }, 30_000);
+      }
+    });
+
+    mobileAds()
+      .initialize()
+      .then(async () => {
+        if (!active) return;
+        try {
+          const savedTimestamp = Number(await AsyncStorage.getItem(LAST_SHOWN_KEY));
+          if (Number.isFinite(savedTimestamp) && savedTimestamp > 0) {
+            lastInterstitialShownRef.current = savedTimestamp;
+            setLastInterstitialTime(savedTimestamp);
+          }
+        } catch (e) {}
+        if (!active) return;
+        adsInitializedRef.current = true;
+        setAdsInitialized(true);
+        interstitial.load();
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+      unsubscribeLoaded();
+      unsubscribeOpened();
+      unsubscribeClosed();
+      unsubscribeError();
+      if (retryInterstitialRef.current) clearTimeout(retryInterstitialRef.current);
+    };
+  }, [finishPendingNavigation, interstitial]);
 
   const getCooldownRemainingSeconds = (): number => {
-    if (lastInterstitialTime === 0) return 0;
-    const elapsed = Date.now() - lastInterstitialTime;
+    if (lastInterstitialShownRef.current === 0) return 0;
+    const elapsed = Date.now() - lastInterstitialShownRef.current;
     const remaining = COOLDOWN_MS - elapsed;
     return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
   };
 
   const resetInterstitialCooldown = () => {
+    lastInterstitialShownRef.current = 0;
     setLastInterstitialTime(0);
+    AsyncStorage.removeItem(LAST_SHOWN_KEY).catch(() => {});
   };
 
   const closeInterstitial = () => {
-    setIsInterstitialVisible(false);
-    setLastInterstitialTime(Date.now());
-    if (pendingNavigation) {
-      pendingNavigation();
-      setPendingNavigation(null);
-    }
+    finishPendingNavigation();
   };
 
-  // Hàm kiểm tra và kích hoạt Interstitial Ads khi ấn nút chuyển trang
+  // Hàm kiểm tra và kích hoạt Interstitial Ads khi ấn nút chuyển trang (Theo chuẩn BinhGold24)
   const executeWithInterstitialCheck = (targetScreen: ScreenName, executeAction: () => void) => {
-    // Nếu chuyển sang chính trang hiện tại thì không hiện quảng cáo
-    if (currentScreen.name === targetScreen) {
+    // Nếu chuyển sang chính trang hiện tại hoặc đang có lượt chuyển trang chờ xử lý
+    if (currentScreen.name === targetScreen || pendingNavigationRef.current !== null) {
       executeAction();
       return;
     }
 
     const now = Date.now();
-    const canShowAd =
-      ADMOB_CONFIG.IS_ENABLED &&
-      (lastInterstitialTime === 0 || now - lastInterstitialTime >= COOLDOWN_MS);
+    const cooldownFinished =
+      lastInterstitialShownRef.current === 0 ||
+      now - lastInterstitialShownRef.current >= COOLDOWN_MS;
 
-    if (canShowAd) {
-      // 1. Lưu lại hành động chuyển trang
-      setPendingNavigation(() => executeAction);
-      // 2. Bật Interstitial Ad (người dùng tắt ad thì mới chuyển trang)
-      setIsInterstitialVisible(true);
-    } else {
+    if (!adsInitializedRef.current || !cooldownFinished) {
       // Nếu chưa đủ 3 phút từ lần hiện trước -> chuyển trang ngay
       executeAction();
+      return;
     }
+
+    // 1. Lưu lại hành động chuyển trang
+    pendingNavigationRef.current = executeAction;
+    setNavigationPending(true);
+    setIsInterstitialVisible(true);
+
+    // 2. Kích hoạt hiển thị Interstitial Ad (người dùng tắt ad thì mới chuyển trang)
+    interstitial.show().catch((adError: any) => {
+      console.warn('Lỗi hiển thị quảng cáo Interstitial:', adError);
+      finishPendingNavigation();
+    });
   };
 
   const refreshData = async () => {

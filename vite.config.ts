@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'react-native/Libraries/Utilities/codegenNativeComponent': path.resolve(__dirname, 'src/mockCodegen.ts'),
+      'react-native-google-mobile-ads': path.resolve(__dirname, 'src/mockGoogleMobileAds.tsx'),
       'react-native': 'react-native-web',
     },
     extensions: [

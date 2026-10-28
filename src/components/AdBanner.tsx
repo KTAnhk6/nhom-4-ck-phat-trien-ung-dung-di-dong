@@ -20,6 +20,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import { ADMOB_CONFIG } from '../config/apiConfig';
 import { colors } from '../theme/colors';
 import { borderRadius, shadows, spacing } from '../theme/spacing';
@@ -115,23 +116,15 @@ export const AdBanner: React.FC<AdBannerProps> = ({
 
   // 1. NATIVE ADMOB (CHO THIẾT BỊ ANDROID/IOS ĐÃ CÀI NATIVE MODULE)
   if (Platform.OS !== 'web') {
-    try {
-      const GoogleMobileAds = require('react-native-google-mobile-ads');
-      if (GoogleMobileAds && GoogleMobileAds.BannerAd) {
-        const { BannerAd, BannerAdSize, TestIds } = GoogleMobileAds;
-        return (
-          <View style={[styles.nativeWrapper, style]}>
-            <BannerAd
-              unitId={ADMOB_CONFIG.IS_TEST_MODE ? TestIds.BANNER : ADMOB_CONFIG.BANNER_ID}
-              size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-              requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-            />
-          </View>
-        );
-      }
-    } catch {
-      // Fallback xuống giao diện tương tác bên dưới
-    }
+    return (
+      <View style={[styles.nativeWrapper, style]}>
+        <BannerAd
+          unitId={ADMOB_CONFIG.IS_TEST_MODE ? TestIds.BANNER : ADMOB_CONFIG.BANNER_ID}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+        />
+      </View>
+    );
   }
 
   // 2. GIAO DIỆN QUẢNG CÁO TƯƠNG TÁC (HỖ TRỢ CẢ WEB VÀ MOBILE)

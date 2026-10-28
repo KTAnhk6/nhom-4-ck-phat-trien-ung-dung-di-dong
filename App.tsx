@@ -10,12 +10,14 @@
  * - Việt: Quản trị hệ thống (Admin Dashboard, Services, Categories, Users, Reviews, Notifications, Stats)
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   BackHandler,
   StatusBar,
   StyleSheet,
+  Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import {
@@ -23,6 +25,16 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 import { colors } from './src/theme/colors';
+
+// Google Mobile Ads (Bước 2: Chuẩn BinhGold24 / Google Quickstart)
+import mobileAds, {
+  AdEventType,
+  BannerAd,
+  BannerAdSize,
+  InterstitialAd as GoogleMobileInterstitialAd,
+  TestIds,
+  AdMobModalHost,
+} from 'react-native-google-mobile-ads';
 
 // Context Providers
 import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
@@ -203,6 +215,18 @@ const MainNavigator: React.FC = () => {
     }
   };
 
+  // Google Mobile Ads Initialization (Bước 2: Khởi tạo AdMob SDK)
+  useEffect(() => {
+    mobileAds()
+      .initialize()
+      .then(adapterStatuses => {
+        console.log('Google Mobile Ads Initialized:', adapterStatuses);
+      })
+      .catch(err => {
+        console.warn('AdMob SDK init error:', err);
+      });
+  }, []);
+
   return (
     <View
       style={[
@@ -214,10 +238,20 @@ const MainNavigator: React.FC = () => {
       <View style={styles.screenContainer}>
         <ErrorBoundary>{renderActiveScreen()}</ErrorBoundary>
       </View>
-      <AdBanner placement={showBottomNav ? 'bottom_nav' : 'bottom'} />
+
+      {/* Google AdMob Banner Ads ở bottom (Mỗi screen đều có banner ads ở bottom theo chuẩn BinhGold24) */}
+      <View style={styles.bottomBannerWrapper}>
+        <BannerAd
+          unitId={TestIds.BANNER}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+        />
+      </View>
+
       {showBottomNav && <BottomNav />}
       <AppOpenAd />
       <InterstitialAd />
+      <AdMobModalHost />
     </View>
   );
 };
@@ -287,5 +321,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 12,
+  },
+  bottomBannerWrapper: {
+    width: '100%',
+    zIndex: 10,
   },
 });
