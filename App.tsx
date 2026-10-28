@@ -59,6 +59,47 @@ import { ManageReviewsScreen } from './src/screens/admin/ManageReviewsScreen';
 import { ManageNotificationsScreen } from './src/screens/admin/ManageNotificationsScreen';
 import { AdminStatsScreen } from './src/screens/admin/AdminStatsScreen';
 
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, ErrorBoundaryState> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error('ErrorBoundary captured error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.errorBoundaryContainer}>
+          <Text style={styles.errorBoundaryEmoji}>⚠️</Text>
+          <Text style={styles.errorBoundaryTitle}>Đã có lỗi hiển thị nội dung</Text>
+          <Text style={styles.errorBoundaryDesc}>
+            {this.state.error?.message || 'Vui lòng bấm nút bên dưới để thử lại'}
+          </Text>
+          <TouchableOpacity
+            style={styles.errorBoundaryBtn}
+            onPress={() => this.setState({ hasError: false, error: null })}
+          >
+            <Text style={styles.errorBoundaryBtnText}>Tải lại trang</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const MainNavigator: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { currentScreen, goBack, isLoading } = useTourism();
@@ -170,7 +211,9 @@ const MainNavigator: React.FC = () => {
       ]}
     >
       {showHeader && <Header showBack={currentScreen.name !== 'HOME'} />}
-      <View style={styles.screenContainer}>{renderActiveScreen()}</View>
+      <View style={styles.screenContainer}>
+        <ErrorBoundary>{renderActiveScreen()}</ErrorBoundary>
+      </View>
       <AdBanner placement={showBottomNav ? 'bottom_nav' : 'bottom'} />
       {showBottomNav && <BottomNav />}
       <AppOpenAd />
@@ -186,7 +229,9 @@ export default function App() {
       <LanguageProvider>
         <AuthProvider>
           <TourismProvider>
-            <MainNavigator />
+            <ErrorBoundary>
+              <MainNavigator />
+            </ErrorBoundary>
           </TourismProvider>
         </AuthProvider>
       </LanguageProvider>
@@ -207,5 +252,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.background,
+  },
+  errorBoundaryContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: colors.background,
+  },
+  errorBoundaryEmoji: {
+    fontSize: 40,
+    marginBottom: 8,
+  },
+  errorBoundaryTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#EF4444',
+    marginBottom: 6,
+  },
+  errorBoundaryDesc: {
+    fontSize: 12,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  errorBoundaryBtn: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  errorBoundaryBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12,
   },
 });

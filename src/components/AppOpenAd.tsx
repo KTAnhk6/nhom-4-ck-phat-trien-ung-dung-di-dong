@@ -53,21 +53,26 @@ export const AppOpenAd: React.FC<AppOpenAdProps> = ({ onClose }) => {
     return () => clearInterval(interval);
   }, [visible]);
 
+  const [showVoucherModal, setShowVoucherModal] = useState<boolean>(false);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
+
   const handleCloseAd = () => {
     setVisible(false);
     if (onClose) onClose();
   };
 
   const handleClaimOffer = () => {
+    setShowVoucherModal(true);
+  };
+
+  const handleCopyVoucher = () => {
+    setIsCopied(true);
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText('DALATWANDER2026').catch(() => {});
+    }
     Alert.alert(
-      '🎉 Nhận Voucher Thành Công!',
-      'Mã ưu đãi: DALATWANDER2026\nĐã áp dụng giảm giá 20% cho chuyến đi Đà Lạt của bạn!',
-      [
-        {
-          text: 'Vào ứng dụng ngay',
-          onPress: () => handleCloseAd(),
-        },
-      ]
+      '🎉 Đã sao chép mã ưu đãi!',
+      'Mã: DALATWANDER2026\nĐã sao chép vào bộ nhớ tạm. Bạn có thể sử dụng khi đặt tour & trải nghiệm Đà Lạt!'
     );
   };
 
@@ -131,31 +136,72 @@ export const AppOpenAd: React.FC<AppOpenAdProps> = ({ onClose }) => {
 
         {/* Nội dung chính quảng cáo ở giữa/cuối */}
         <View style={styles.bottomContent}>
-          <View style={styles.offerBadge}>
-            <Text style={styles.offerBadgeText}>ƯU ĐÃI ĐỘC QUYỀN MÙA HOA ĐÀ LẠT</Text>
-          </View>
+          {showVoucherModal ? (
+            <View style={styles.voucherBox}>
+              <View style={styles.voucherHeaderRow}>
+                <Text style={styles.voucherBadge}>🎉 ƯU ĐÃI ĐÃ KÍCH HOẠT</Text>
+                <TouchableOpacity onPress={() => setShowVoucherModal(false)}>
+                  <Text style={styles.voucherCloseMini}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.voucherTitle}>GIẢM 20% TOUR ĐÀ LẠT</Text>
+              <Text style={styles.voucherSub}>
+                Áp dụng cho Tour Săn Mây Cầu Đất, Cà phê Túi Mơ To & Homestay
+              </Text>
 
-          <Text style={styles.mainTitle}>
-            Tour Săn Mây Cầu Đất & Ngắm Hoàng Hôn Thung Lũng
-          </Text>
+              <View style={styles.codeContainer}>
+                <Text style={styles.codeText}>DALATWANDER2026</Text>
+              </View>
 
-          <Text style={styles.description}>
-            Khởi hành 4h30 sáng • Đón tận homestay • Bao gồm ăn sáng & cà phê chill view đồi thông.
-          </Text>
+              <TouchableOpacity
+                style={[styles.btnCopy, isCopied && styles.btnCopySuccess]}
+                onPress={handleCopyVoucher}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.btnCopyText}>
+                  {isCopied ? '✓ Đã sao chép mã: DALATWANDER2026' : '📋 Sao chép mã Voucher'}
+                </Text>
+              </TouchableOpacity>
 
-          <View style={styles.ratingRow}>
-            <Text style={styles.ratingStars}>⭐⭐⭐⭐⭐</Text>
-            <Text style={styles.ratingScore}>4.9/5 (512 đánh giá du khách)</Text>
-          </View>
+              <TouchableOpacity
+                style={styles.btnEnterApp}
+                onPress={handleCloseAd}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.btnEnterAppText}>
+                  🚀 Vào khám phá ứng dụng ngay ➔
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <View style={styles.offerBadge}>
+                <Text style={styles.offerBadgeText}>ƯU ĐÃI ĐỘC QUYỀN MÙA HOA ĐÀ LẠT</Text>
+              </View>
 
-          {/* Nút Kêu gọi Hành động (CTA) */}
-          <TouchableOpacity
-            style={[styles.ctaButton, shadows.card]}
-            onPress={handleClaimOffer}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.ctaButtonText}>🎁 NHẬN VOUCHER GIẢM 20% NGAY</Text>
-          </TouchableOpacity>
+              <Text style={styles.mainTitle}>
+                Tour Săn Mây Cầu Đất & Ngắm Hoàng Hôn Thung Lũng
+              </Text>
+
+              <Text style={styles.description}>
+                Khởi hành 4h30 sáng • Đón tận homestay • Bao gồm ăn sáng & cà phê chill view đồi thông.
+              </Text>
+
+              <View style={styles.ratingRow}>
+                <Text style={styles.ratingStars}>⭐⭐⭐⭐⭐</Text>
+                <Text style={styles.ratingScore}>4.9/5 (512 đánh giá du khách)</Text>
+              </View>
+
+              {/* Nút Kêu gọi Hành động (CTA) */}
+              <TouchableOpacity
+                style={[styles.ctaButton, shadows.card]}
+                onPress={handleClaimOffer}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.ctaButtonText}>🎁 NHẬN VOUCHER GIẢM 20% NGAY</Text>
+              </TouchableOpacity>
+            </>
+          )}
 
           {/* Thanh Tiến Trình 15 giây & Đếm ngược */}
           <View style={styles.timerFooter}>
@@ -356,5 +402,98 @@ const styles = StyleSheet.create({
     color: '#F59E0B',
     fontSize: 11,
     fontWeight: '700',
+  },
+
+  // Voucher Card Styles
+  voucherBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 2,
+    borderColor: '#4ADE80',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  voucherHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  voucherBadge: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#065F46',
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  voucherCloseMini: {
+    fontSize: 16,
+    color: '#64748B',
+    padding: 2,
+  },
+  voucherTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0F172A',
+    marginBottom: 2,
+  },
+  voucherSub: {
+    fontSize: 12,
+    color: '#64748B',
+    lineHeight: 16,
+    marginBottom: spacing.sm,
+  },
+  codeContainer: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: '#059669',
+    borderRadius: borderRadius.md,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  codeText: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#059669',
+    letterSpacing: 2,
+  },
+  btnCopy: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingVertical: 10,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  btnCopySuccess: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#34D399',
+  },
+  btnCopyText: {
+    color: '#0F172A',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  btnEnterApp: {
+    backgroundColor: colors.primary,
+    paddingVertical: 11,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  btnEnterAppText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
   },
 });

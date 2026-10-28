@@ -29,16 +29,6 @@ export const InterstitialAd: React.FC = () => {
     return null;
   }
 
-  // Khi chạy trên thiết bị Native Android/iOS đã biên dịch AdMob native module
-  if (Platform.OS !== 'web') {
-    try {
-      const GoogleMobileAds = require('react-native-google-mobile-ads');
-      // Native hook có thể kích hoạt tại đây
-    } catch {
-      // Fallback xuống giao diện mô phỏng bên dưới
-    }
-  }
-
   return (
     <Modal
       visible={isInterstitialVisible}

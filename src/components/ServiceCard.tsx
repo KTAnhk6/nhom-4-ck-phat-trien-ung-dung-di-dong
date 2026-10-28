@@ -27,24 +27,32 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   layout = 'list',
   onPress,
 }) => {
+  if (!service) return null;
+
   const { navigateToDetail, isFavorite, toggleFavorite } = useTourism();
-  const favorited = isFavorite(service.id);
+  const serviceId = String(service.id || '');
+  const favorited = isFavorite(serviceId);
 
   const handleCardPress = () => {
     if (onPress) {
       onPress();
     } else {
-      navigateToDetail(service.id);
+      navigateToDetail(serviceId);
     }
   };
 
   const handleFavoritePress = (e: any) => {
     e.stopPropagation?.();
-    toggleFavorite(service.id);
+    toggleFavorite(serviceId);
   };
 
+  const ratingVal =
+    typeof service.rating === 'number'
+      ? service.rating
+      : parseFloat(service.rating as any) || 5.0;
+
   const imageUrl =
-    service.images && service.images.length > 0
+    Array.isArray(service.images) && service.images.length > 0
       ? service.images[0]
       : 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80';
 
@@ -59,7 +67,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
           <Image source={{ uri: imageUrl }} style={styles.hImage} resizeMode="cover" />
           <View style={styles.ratingBadge}>
             <Text style={styles.ratingStar}>★</Text>
-            <Text style={styles.ratingText}>{service.rating.toFixed(1)}</Text>
+            <Text style={styles.ratingText}>{ratingVal.toFixed(1)}</Text>
           </View>
           <TouchableOpacity
             style={styles.favBtn}
@@ -77,13 +85,13 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
             {service.categoryName || 'Dịch vụ Đà Lạt'}
           </Text>
           <Text style={styles.hName} numberOfLines={1}>
-            {service.name}
+            {service.name || 'Điểm đến Đà Lạt'}
           </Text>
           <Text style={styles.locationText} numberOfLines={1}>
-            📍 {service.district} • {service.distanceKm} km
+            📍 {service.district || 'Đà Lạt'} • {service.distanceKm || 2.5} km
           </Text>
           <Text style={styles.priceText} numberOfLines={1}>
-            {service.priceDisplay}
+            {service.priceDisplay || 'Đang cập nhật'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -100,7 +108,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
         <Image source={{ uri: imageUrl }} style={styles.listImage} resizeMode="cover" />
         <View style={styles.ratingBadge}>
           <Text style={styles.ratingStar}>★</Text>
-          <Text style={styles.ratingText}>{service.rating.toFixed(1)}</Text>
+          <Text style={styles.ratingText}>{ratingVal.toFixed(1)}</Text>
         </View>
       </View>
 
@@ -121,19 +129,19 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
         </View>
 
         <Text style={styles.listName} numberOfLines={2}>
-          {service.name}
+          {service.name || 'Điểm đến Đà Lạt'}
         </Text>
 
         <Text style={styles.locationText} numberOfLines={1}>
-          📍 {service.district} • {service.distanceKm} km
+          📍 {service.district || 'Đà Lạt'} • {service.distanceKm || 2.5} km
         </Text>
 
         <View style={styles.bottomRow}>
           <Text style={styles.priceText} numberOfLines={1}>
-            {service.priceDisplay}
+            {service.priceDisplay || 'Đang cập nhật'}
           </Text>
           <Text style={styles.reviewCountText}>
-            ({service.reviewCount} đánh giá)
+            ({service.reviewCount || 0} đánh giá)
           </Text>
         </View>
       </View>

@@ -59,11 +59,11 @@ class TourismServiceManager {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
         s =>
-          s.name.toLowerCase().includes(q) ||
-          s.address.toLowerCase().includes(q) ||
-          s.district.toLowerCase().includes(q) ||
-          s.tags.some(t => t.toLowerCase().includes(q)) ||
-          s.description.toLowerCase().includes(q)
+          (s.name && s.name.toLowerCase().includes(q)) ||
+          (s.address && s.address.toLowerCase().includes(q)) ||
+          (s.district && s.district.toLowerCase().includes(q)) ||
+          (Array.isArray(s.tags) && s.tags.some(t => typeof t === 'string' && t.toLowerCase().includes(q))) ||
+          (s.description && s.description.toLowerCase().includes(q))
       );
     }
 

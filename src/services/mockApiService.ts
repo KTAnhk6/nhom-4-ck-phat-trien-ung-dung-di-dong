@@ -7,6 +7,62 @@
 import { API_CONFIG } from '../config/apiConfig';
 import { ServiceCategory, TourismService, Review } from '../types';
 
+export function normalizeService(raw: any, index: number = 0): TourismService {
+  if (!raw || typeof raw !== 'object') {
+    raw = {};
+  }
+
+  const defaultImages = [
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+  ];
+
+  const ratingVal =
+    typeof raw.rating === 'number'
+      ? raw.rating
+      : parseFloat(raw.rating) || Number((4.5 + (index % 5) * 0.1).toFixed(1));
+
+  const priceMinVal = Number(raw.priceMin) || 45000;
+  const priceMaxVal = Number(raw.priceMax) || 120000;
+  const priceDisplayVal =
+    raw.priceDisplay ||
+    `${priceMinVal.toLocaleString('vi-VN')}đ - ${priceMaxVal.toLocaleString('vi-VN')}đ`;
+
+  const imagesArr =
+    Array.isArray(raw.images) && raw.images.length > 0
+      ? raw.images
+      : raw.avatar
+      ? [raw.avatar]
+      : [defaultImages[index % defaultImages.length]];
+
+  return {
+    id: String(raw.id || `SRV_${Date.now()}_${index}`),
+    name: raw.name || `Điểm đến Đà Lạt #${index + 1}`,
+    categoryId: raw.categoryId || 'CAT_ATTRACTION',
+    categoryName: raw.categoryName || 'Điểm tham quan & Di tích',
+    address: raw.address || 'Đà Lạt, Lâm Đồng',
+    district: raw.district || 'Phường 10',
+    distanceKm: Number(raw.distanceKm) || Number((2.5 + (index % 10) * 1.5).toFixed(1)),
+    priceMin: priceMinVal,
+    priceMax: priceMaxVal,
+    priceDisplay: priceDisplayVal,
+    rating: Number(ratingVal.toFixed(1)),
+    reviewCount: Number(raw.reviewCount) || (50 + (index % 20) * 15),
+    openingHours: raw.openingHours || '07:00 - 22:00',
+    phone: raw.phone || '0263 382 1234',
+    images: imagesArr,
+    tags: Array.isArray(raw.tags) && raw.tags.length > 0 ? raw.tags : ['Check-in', 'Đà Lạt', 'Du lịch'],
+    description: raw.description || 'Địa điểm du lịch và trải nghiệm tuyệt vời tại thành phố ngàn hoa Đà Lạt.',
+    latitude: Number(raw.latitude) || 11.9404,
+    longitude: Number(raw.longitude) || 108.4583,
+    isFeatured: raw.isFeatured !== undefined ? Boolean(raw.isFeatured) : index < 6,
+    isPopular: raw.isPopular !== undefined ? Boolean(raw.isPopular) : index % 2 === 0,
+    createdAt: raw.createdAt || new Date().toISOString(),
+  };
+}
+
 class MockApiService {
   private get baseUrl(): string {
     return API_CONFIG.MOCK_API_BASE_URL.replace(/\/+$/, '');
@@ -64,6 +120,7 @@ class MockApiService {
     }
   }
 
+
   // ================= SERVICES API =================
 
   async getServices(): Promise<TourismService[]> {
@@ -72,7 +129,8 @@ class MockApiService {
       throw new Error(`MockAPI Lỗi [${res.status}]: Không thể lấy danh sách dịch vụ`);
     }
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    if (!Array.isArray(data)) return [];
+    return data.map((item, idx) => normalizeService(item, idx));
   }
 
   async getServiceById(id: string): Promise<TourismService> {
@@ -80,7 +138,8 @@ class MockApiService {
     if (!res.ok) {
       throw new Error(`MockAPI Lỗi [${res.status}]: Không tìm thấy dịch vụ ID ${id}`);
     }
-    return await res.json();
+    const raw = await res.json();
+    return normalizeService(raw);
   }
 
   async createService(data: Partial<TourismService>): Promise<TourismService> {

@@ -40,10 +40,12 @@ export const ServiceListScreen: React.FC = () => {
   };
 
   const isFilterActive =
-    filter.categoryId !== 'ALL' ||
-    filter.district !== 'ALL' ||
-    filter.minRating > 0 ||
-    filter.sortBy !== 'popular';
+    (filter?.categoryId && filter.categoryId !== 'ALL') ||
+    (filter?.district && filter.district !== 'ALL') ||
+    (filter?.minRating && filter.minRating > 0) ||
+    (filter?.sortBy && filter.sortBy !== 'popular');
+
+  const safeList = Array.isArray(filteredServices) ? filteredServices : [];
 
   return (
     <View style={styles.container}>
@@ -82,38 +84,39 @@ export const ServiceListScreen: React.FC = () => {
           <CategoryChip
             label={t('allCategories')}
             icon="🌲"
-            isSelected={filter.categoryId === 'ALL'}
+            isSelected={!filter?.categoryId || filter.categoryId === 'ALL'}
             onPress={() => setFilter(prev => ({ ...prev, categoryId: 'ALL' }))}
           />
-          {categories.map(cat => (
-            <CategoryChip
-              key={cat.id}
-              label={language === 'vi' ? cat.nameVi : cat.name}
-              icon={cat.icon}
-              count={cat.count}
-              isSelected={filter.categoryId === cat.id}
-              onPress={() => handleSelectCategory(cat.id)}
-            />
-          ))}
+          {Array.isArray(categories) &&
+            categories.map(cat => (
+              <CategoryChip
+                key={String(cat.id)}
+                label={language === 'vi' ? cat.nameVi : cat.name}
+                icon={cat.icon}
+                count={cat.count}
+                isSelected={filter?.categoryId === cat.id}
+                onPress={() => handleSelectCategory(cat.id)}
+              />
+            ))}
         </ScrollView>
       </View>
 
       {/* Header Info: count & active sort */}
       <View style={styles.listHeaderRow}>
         <Text style={styles.resultsCount}>
-          {filteredServices.length} {t('dalatScope')}
+          {safeList.length} {t('dalatScope')}
         </Text>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Text style={styles.sortIndicator}>
-            Sắp xếp: {filter.sortBy} ▾
+            Sắp xếp: {filter?.sortBy || 'popular'} ▾
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Services List */}
       <FlatList
-        data={filteredServices}
-        keyExtractor={item => item.id}
+        data={safeList}
+        keyExtractor={(item, index) => String(item?.id || index)}
         renderItem={({ item }) => <ServiceCard service={item} layout="list" />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}

@@ -44,8 +44,21 @@ export const HomeScreen: React.FC = () => {
     );
   };
 
-  const featuredServices = services.filter(s => s.isFeatured);
-  const topRatedServices = [...services].sort((a, b) => b.rating - a.rating).slice(0, 4);
+  const featuredScrollRef = React.useRef<ScrollView>(null);
+  const [scrollOffset, setScrollOffset] = useState<number>(0);
+
+  const scrollFeatured = (direction: 'left' | 'right') => {
+    const delta = 250;
+    const newOffset = direction === 'left' ? Math.max(0, scrollOffset - delta) : scrollOffset + delta;
+    setScrollOffset(newOffset);
+    featuredScrollRef.current?.scrollTo({ x: newOffset, animated: true });
+  };
+
+  const featuredServices =
+    services.filter(s => s.isFeatured).length >= 4
+      ? services.filter(s => s.isFeatured)
+      : services.slice(0, 10);
+  const topRatedServices = [...services].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 6);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -176,16 +189,38 @@ export const HomeScreen: React.FC = () => {
 
       {/* 4. Featured Destinations (Horizontal Carousel) */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{t('featuredDestinations')}</Text>
+        <View style={styles.headerLeftWithArrows}>
+          <Text style={styles.sectionTitle}>{t('featuredDestinations')}</Text>
+          <View style={styles.carouselNavRow}>
+            <TouchableOpacity
+              style={styles.carouselNavBtn}
+              onPress={() => scrollFeatured('left')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.carouselNavIcon}>◀</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.carouselNavBtn}
+              onPress={() => scrollFeatured('right')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.carouselNavIcon}>▶</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <TouchableOpacity onPress={() => navigate('SERVICE_LIST')}>
           <Text style={styles.viewAllText}>{t('viewAll')} →</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView
+        ref={featuredScrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.horizontalScroll}
+        onScroll={e => setScrollOffset(e.nativeEvent.contentOffset.x)}
+        scrollEventThrottle={16}
       >
         {featuredServices.map(srv => (
           <ServiceCard key={srv.id} service={srv} layout="horizontal" />
@@ -372,6 +407,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: colors.text,
+  },
+  headerLeftWithArrows: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  carouselNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  carouselNavBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  carouselNavIcon: {
+    fontSize: 9,
+    color: '#334155',
+    fontWeight: '800',
   },
   viewAllText: {
     fontSize: 12,
