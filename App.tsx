@@ -131,6 +131,18 @@ const MainNavigator: React.FC = () => {
     return () => handler.remove();
   }, [currentScreen, goBack]);
 
+  // Google Mobile Ads Initialization (Bước 2: Khởi tạo AdMob SDK - Tuân thủ React Hook Rules)
+  useEffect(() => {
+    mobileAds()
+      .initialize()
+      .then(adapterStatuses => {
+        console.log('Google Mobile Ads Initialized:', adapterStatuses);
+      })
+      .catch(err => {
+        console.warn('AdMob SDK init error:', err);
+      });
+  }, []);
+
   if (isLoading || authLoading) {
     return (
       <View style={[styles.loadingCenter, { paddingTop: insets.top }]}>
@@ -215,18 +227,6 @@ const MainNavigator: React.FC = () => {
     }
   };
 
-  // Google Mobile Ads Initialization (Bước 2: Khởi tạo AdMob SDK)
-  useEffect(() => {
-    mobileAds()
-      .initialize()
-      .then(adapterStatuses => {
-        console.log('Google Mobile Ads Initialized:', adapterStatuses);
-      })
-      .catch(err => {
-        console.warn('AdMob SDK init error:', err);
-      });
-  }, []);
-
   return (
     <View
       style={[
@@ -258,18 +258,18 @@ const MainNavigator: React.FC = () => {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle="dark-content" />
-      <LanguageProvider>
-        <AuthProvider>
-          <TourismProvider>
-            <ErrorBoundary>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <StatusBar barStyle="dark-content" />
+        <LanguageProvider>
+          <AuthProvider>
+            <TourismProvider>
               <MainNavigator />
-            </ErrorBoundary>
-          </TourismProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </SafeAreaProvider>
+            </TourismProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
