@@ -32,12 +32,13 @@ export const InterstitialAd: React.FC = () => {
   return (
     <Modal
       visible={isInterstitialVisible}
-      transparent={false}
+      transparent={true}
       animationType="fade"
       statusBarTranslucent
       onRequestClose={closeInterstitial}
     >
-      <View style={styles.container}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.phoneContainer}>
         {/* Ảnh nền toàn màn hình */}
         <Image
           source={{
@@ -113,16 +114,36 @@ export const InterstitialAd: React.FC = () => {
           </Text>
         </View>
       </View>
-    </Modal>
-  );
+    </View>
+  </Modal>
+);
 };
 
 const styles = StyleSheet.create({
-  container: {
+  modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(10, 20, 25, 0.88)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Platform.OS === 'web' ? 16 : 0,
+  },
+  phoneContainer: {
+    width: '100%',
+    maxWidth: 440,
+    height: '100%',
+    maxHeight: Platform.OS === 'web' ? 900 : '100%',
     backgroundColor: '#000000',
-    justifyContent: 'space-between',
     position: 'relative',
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+    borderRadius: Platform.OS === 'web' ? 32 : 0,
+    borderWidth: Platform.OS === 'web' ? 2 : 0,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 25 },
+    shadowOpacity: 0.65,
+    shadowRadius: 35,
+    elevation: 24,
   },
   backgroundImage: {
     ...StyleSheet.absoluteFillObject,
@@ -132,10 +153,10 @@ const styles = StyleSheet.create({
   },
   darkOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.48)',
+    backgroundColor: 'rgba(0, 0, 0, 0.52)',
   },
   topHeader: {
-    paddingTop: 45,
+    paddingTop: Platform.OS === 'web' ? 24 : 45,
     paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -230,8 +230,9 @@ export const AdMobModalHost: React.FC = () => {
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} transparent={false} animationType="fade" onRequestClose={handleClose}>
-      <View style={interStyles.container}>
+    <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={handleClose}>
+      <View style={interStyles.modalOverlay}>
+        <View style={interStyles.phoneContainer}>
         {/* Ảnh nền Đà Lạt */}
         <Image
           source={{
@@ -285,7 +286,8 @@ export const AdMobModalHost: React.FC = () => {
           </Text>
         </View>
       </View>
-    </Modal>
+    </View>
+  </Modal>
   );
 };
 
@@ -407,11 +409,30 @@ const bannerStyles = StyleSheet.create({
 });
 
 const interStyles = StyleSheet.create({
-  container: {
+  modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(10, 20, 25, 0.88)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  phoneContainer: {
+    width: '100%',
+    maxWidth: 440,
+    height: '100%',
+    maxHeight: 900,
     backgroundColor: '#000000',
-    justifyContent: 'space-between',
     position: 'relative',
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 25 },
+    shadowOpacity: 0.65,
+    shadowRadius: 35,
+    elevation: 24,
   },
   backgroundImage: {
     ...StyleSheet.absoluteFillObject,
@@ -424,7 +445,7 @@ const interStyles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.52)',
   },
   header: {
-    paddingTop: 45,
+    paddingTop: 24,
     paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
