@@ -203,10 +203,7 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [finishPendingNavigation, interstitial]);
 
   const getCooldownRemainingSeconds = (): number => {
-    if (lastInterstitialShownRef.current === 0) return 0;
-    const elapsed = Date.now() - lastInterstitialShownRef.current;
-    const remaining = COOLDOWN_MS - elapsed;
-    return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
+    return 0; // Luôn luôn hiển thị quảng cáo khi chuyển trang
   };
 
   const resetInterstitialCooldown = () => {
@@ -217,36 +214,41 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const closeInterstitial = () => {
     finishPendingNavigation();
+    interstitial.load();
   };
 
-  // Hàm kiểm tra và kích hoạt Interstitial Ads khi ấn nút chuyển trang (Theo chuẩn BinhGold24)
+  // Hàm kiểm tra và kích hoạt Interstitial Ads khi ấn nút chuyển trang (Luôn luôn hiển thị mỗi khi chuyển trang)
   const executeWithInterstitialCheck = (targetScreen: ScreenName, executeAction: () => void) => {
-    // Nếu chuyển sang chính trang hiện tại hoặc đang có lượt chuyển trang chờ xử lý
-    if (currentScreen.name === targetScreen || pendingNavigationRef.current !== null) {
+    // Nếu chuyển sang chính trang hiện tại
+    if (currentScreen.name === targetScreen) {
       executeAction();
       return;
     }
 
-    const now = Date.now();
-    const cooldownFinished =
-      lastInterstitialShownRef.current === 0 ||
-      now - lastInterstitialShownRef.current >= COOLDOWN_MS;
+    // Nếu đang trong quá trình hiển thị quảng cáo chờ tắt -> bỏ qua tránh click dồn
+    if (pendingNavigationRef.current !== null) {
+      return;
+    }
 
-    if (!adsInitializedRef.current || !cooldownFinished) {
-      // Nếu chưa đủ 3 phút từ lần hiện trước -> chuyển trang ngay
+    // Nếu tắt quảng cáo AdMob trong config
+    if (!ADMOB_CONFIG.IS_ENABLED) {
       executeAction();
       return;
     }
 
-    // 1. Lưu lại hành động chuyển trang
+    // 1. Lưu lại hành động chuyển trang và bật hiển thị quảng cáo xen kẽ
     pendingNavigationRef.current = executeAction;
     setNavigationPending(true);
     setIsInterstitialVisible(true);
 
-    // 2. Kích hoạt hiển thị Interstitial Ad (người dùng tắt ad thì mới chuyển trang)
+    const shownAt = Date.now();
+    lastInterstitialShownRef.current = shownAt;
+    setLastInterstitialTime(shownAt);
+    AsyncStorage.setItem(LAST_SHOWN_KEY, String(shownAt)).catch(() => {});
+
+    // 2. Kích hoạt AdMob SDK show nếu có
     interstitial.show().catch((adError: any) => {
       console.warn('Lỗi hiển thị quảng cáo Interstitial:', adError);
-      finishPendingNavigation();
     });
   };
 

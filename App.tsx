@@ -33,7 +33,6 @@ import mobileAds, {
   BannerAdSize,
   InterstitialAd as GoogleMobileInterstitialAd,
   TestIds,
-  AdMobModalHost,
 } from 'react-native-google-mobile-ads';
 
 // Context Providers
@@ -251,7 +250,6 @@ const MainNavigator: React.FC = () => {
       {showBottomNav && <BottomNav />}
       <AppOpenAd />
       <InterstitialAd />
-      <AdMobModalHost />
     </View>
   );
 };

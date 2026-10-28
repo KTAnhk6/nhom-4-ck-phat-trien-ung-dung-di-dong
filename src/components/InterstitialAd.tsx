@@ -4,7 +4,7 @@
  * Quy tắc nghiệp vụ theo yêu cầu bài tập:
  * 1. Khi ấn nút chuyển trang -> Hiển thị Interstitial Ads.
  * 2. Người dùng tắt Interstitial Ads (bấm ✕) -> Mới thực hiện chuyển sang trang mới.
- * 3. Tần suất hiển thị: Tối đa 3 phút / lần (Cooldown 180 giây).
+ * 3. Tần suất hiển thị: Luôn luôn hiển thị mỗi khi bấm chuyển trang (Tắt ad để vào trang mới).
  */
 
 import React from 'react';
@@ -70,11 +70,11 @@ export const InterstitialAd: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Thẻ ghi chú quy tắc hiển thị 3 phút */}
+        {/* Thẻ ghi chú quy tắc hiển thị */}
         <View style={styles.ruleBadgeContainer}>
           <View style={styles.ruleBadge}>
             <Text style={styles.ruleBadgeText}>
-              ⏱ Quy tắc bài tập: Hiển thị tối đa 1 lần / 3 phút khi chuyển trang
+              ⏱ Quy tắc: Luôn hiển thị quảng cáo khi chuyển trang (Tắt ad để vào trang mới)
             </Text>
           </View>
         </View>

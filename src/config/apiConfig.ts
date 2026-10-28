@@ -33,8 +33,8 @@ export const ADMOB_CONFIG = {
   INTERSTITIAL_ID: 'ca-app-pub-3940256099942544/1033173712',
   REWARDED_ID: 'ca-app-pub-3940256099942544/5224354917',
 
-  // Thời gian giãn cách giữa các lần hiển thị Interstitial Ad (Tối đa 1 lần / 3 phút)
-  INTERSTITIAL_COOLDOWN_MS: 3 * 60 * 1000,
+  // Thời gian giãn cách giữa các lần hiển thị Interstitial Ad (0ms: Luôn luôn hiển thị khi chuyển trang)
+  INTERSTITIAL_COOLDOWN_MS: 0,
 
   // Tùy chọn test mode
   IS_TEST_MODE: true,

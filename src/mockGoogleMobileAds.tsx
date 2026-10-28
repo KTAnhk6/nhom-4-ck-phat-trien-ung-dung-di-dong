@@ -96,17 +96,8 @@ export class InterstitialAd {
   show(): Promise<void> {
     return new Promise((resolve) => {
       this.emit(AdEventType.OPENED);
-      if (globalShowInterstitial) {
-        globalShowInterstitial(() => {
-          this.isLoaded = false;
-          this.emit(AdEventType.CLOSED);
-          resolve();
-        });
-      } else {
-        this.isLoaded = false;
-        this.emit(AdEventType.CLOSED);
-        resolve();
-      }
+      this.isLoaded = false;
+      resolve();
     });
   }
 }
@@ -206,89 +197,7 @@ export const BannerAd: React.FC<BannerAdProps> = ({
 
 // ================= ADMOB MODAL CONTROLLER =================
 export const AdMobModalHost: React.FC = () => {
-  const [visible, setVisible] = useState(false);
-  const [onCloseCallback, setOnCloseCallback] = useState<(() => void) | null>(null);
-
-  useEffect(() => {
-    globalShowInterstitial = (closeCb) => {
-      setOnCloseCallback(() => closeCb);
-      setVisible(true);
-    };
-    return () => {
-      globalShowInterstitial = null;
-    };
-  }, []);
-
-  const handleClose = () => {
-    setVisible(false);
-    if (onCloseCallback) {
-      onCloseCallback();
-      setOnCloseCallback(null);
-    }
-  };
-
-  if (!visible) return null;
-
-  return (
-    <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={handleClose}>
-      <View style={interStyles.modalOverlay}>
-        <View style={interStyles.phoneContainer}>
-        {/* Ảnh nền Đà Lạt */}
-        <Image
-          source={{
-            uri: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=85',
-          }}
-          style={interStyles.backgroundImage}
-        />
-        <View style={interStyles.darkOverlay} />
-
-        <View style={interStyles.header}>
-          <View style={interStyles.badgeRow}>
-            <View style={interStyles.adBadge}>
-              <Text style={interStyles.adBadgeText}>Ad</Text>
-            </View>
-            <View>
-              <Text style={interStyles.brandText}>Google AdMob Interstitial</Text>
-              <Text style={interStyles.subBrandText}>Unit: ca-app-pub-394025...1033173712</Text>
-            </View>
-          </View>
-          <TouchableOpacity style={interStyles.closeBtn} onPress={handleClose} activeOpacity={0.8}>
-            <Text style={interStyles.closeBtnText}>Đóng quảng cáo ✕</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={interStyles.ruleBadgeContainer}>
-          <View style={interStyles.ruleBadge}>
-            <Text style={interStyles.ruleBadgeText}>
-              ⏱ Quy tắc: Tối đa 1 lần / 3 phút khi chuyển trang
-            </Text>
-          </View>
-        </View>
-
-        <View style={interStyles.body}>
-          <View style={interStyles.categoryBadge}>
-            <Text style={interStyles.categoryBadgeText}>QUẢNG CÁO XEN KẼ KHI CHUYỂN TRANG</Text>
-          </View>
-          <Text style={interStyles.title}>🌲 Tour Săn Mây Cầu Đất & Cà Phê Hoàng Hôn</Text>
-          <Text style={interStyles.desc}>
-            Đón bình minh 4h30 sáng giữa biển mây bồng bềnh • Xe đưa đón tận nơi • Tặng kèm điểm tâm và cà phê ngắm đồi thông.
-          </Text>
-          <View style={interStyles.ratingRow}>
-            <Text style={{ fontSize: 16 }}>⭐⭐⭐⭐⭐</Text>
-            <Text style={{ color: '#FDE68A', fontWeight: '700', fontSize: 13 }}>4.9/5 (512 du khách hài lòng)</Text>
-          </View>
-
-          <TouchableOpacity style={interStyles.continueBtn} onPress={handleClose} activeOpacity={0.85}>
-            <Text style={interStyles.continueBtnText}>➔ TIẾP TỤC CHUYỂN ĐẾN TRANG MỚI</Text>
-          </TouchableOpacity>
-          <Text style={interStyles.footerNote}>
-            💡 Người dùng bấm [Đóng quảng cáo ✕] ở góc trên hoặc nút trên để vào trang mới.
-          </Text>
-        </View>
-      </View>
-    </View>
-  </Modal>
-  );
+  return null;
 };
 
 const bannerStyles = StyleSheet.create({
