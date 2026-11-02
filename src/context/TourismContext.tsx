@@ -135,6 +135,13 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
     pendingNavigationRef.current = null;
     setNavigationPending(false);
     setIsInterstitialVisible(false);
+
+    // Bắt đầu chu kỳ tạm tắt quảng cáo trong 3 phút ngay sau khi người dùng bấm/đóng quảng cáo
+    const closedAt = Date.now();
+    lastInterstitialShownRef.current = closedAt;
+    setLastInterstitialTime(closedAt);
+    AsyncStorage.setItem(LAST_SHOWN_KEY, String(closedAt)).catch(() => {});
+
     pending();
   }, []);
 
@@ -203,7 +210,10 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [finishPendingNavigation, interstitial]);
 
   const getCooldownRemainingSeconds = (): number => {
-    return 0; // Luôn luôn hiển thị quảng cáo khi chuyển trang
+    if (lastInterstitialShownRef.current === 0) return 0;
+    const elapsed = Date.now() - lastInterstitialShownRef.current;
+    const remaining = COOLDOWN_MS - elapsed;
+    return remaining > 0 ? Math.ceil(remaining / 1000) : 0;
   };
 
   const resetInterstitialCooldown = () => {
@@ -217,7 +227,19 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
     interstitial.load();
   };
 
-  // Hàm kiểm tra và kích hoạt Interstitial Ads khi ấn nút chuyển trang (Luôn luôn hiển thị mỗi khi chuyển trang)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__closeInterstitial = closeInterstitial;
+      (window as any).__resetInterstitialCooldown = resetInterstitialCooldown;
+      (window as any).__setInterstitialCooldownSeconds = (seconds: number) => {
+        const timestamp = Date.now() - (COOLDOWN_MS - seconds * 1000);
+        lastInterstitialShownRef.current = timestamp;
+        setLastInterstitialTime(timestamp);
+      };
+    }
+  }, [closeInterstitial]);
+
+  // Hàm kiểm tra và kích hoạt Interstitial Ads khi ấn nút chuyển trang (Chu kỳ: tắt tạm thời trong 3 phút sau khi xem quảng cáo)
   const executeWithInterstitialCheck = (targetScreen: ScreenName, executeAction: () => void) => {
     // Nếu chuyển sang chính trang hiện tại
     if (currentScreen.name === targetScreen) {
@@ -236,7 +258,18 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return;
     }
 
-    // 1. Lưu lại hành động chuyển trang và bật hiển thị quảng cáo xen kẽ
+    const now = Date.now();
+    const cooldownFinished =
+      lastInterstitialShownRef.current === 0 ||
+      now - lastInterstitialShownRef.current >= COOLDOWN_MS;
+
+    // Nếu chưa đủ 3 phút kể từ lần hiện trước -> chuyển trang ngay không hiện quảng cáo
+    if (!cooldownFinished) {
+      executeAction();
+      return;
+    }
+
+    // 1. Đã qua 3 phút: Lưu lại hành động chuyển trang và bật hiển thị quảng cáo xen kẽ
     pendingNavigationRef.current = executeAction;
     setNavigationPending(true);
     setIsInterstitialVisible(true);

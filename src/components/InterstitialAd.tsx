@@ -74,7 +74,7 @@ export const InterstitialAd: React.FC = () => {
         <View style={styles.ruleBadgeContainer}>
           <View style={styles.ruleBadge}>
             <Text style={styles.ruleBadgeText}>
-              ⏱ Quy tắc: Luôn hiển thị quảng cáo khi chuyển trang (Tắt ad để vào trang mới)
+              ⏱ Chu kỳ quảng cáo: Tối đa 1 lần / 3 phút khi chuyển trang (Tắt ad để vào trang mới)
             </Text>
           </View>
         </View>
