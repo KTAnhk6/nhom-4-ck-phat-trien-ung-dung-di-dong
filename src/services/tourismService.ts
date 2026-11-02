@@ -56,14 +56,21 @@ class TourismServiceManager {
 
     // 1. Text Search (name, tags, address, description)
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
+      // Bỏ dấu tiếng Việt để "cafe" vẫn khớp "cà phê", "cau dat" vẫn khớp "Cầu Đất"
+      const norm = (v: string) =>
+        (v || '')
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/đ/g, 'd');
+      const q = norm(searchQuery.trim());
       result = result.filter(
         s =>
-          (s.name && s.name.toLowerCase().includes(q)) ||
-          (s.address && s.address.toLowerCase().includes(q)) ||
-          (s.district && s.district.toLowerCase().includes(q)) ||
-          (Array.isArray(s.tags) && s.tags.some(t => typeof t === 'string' && t.toLowerCase().includes(q))) ||
-          (s.description && s.description.toLowerCase().includes(q))
+          (s.name && norm(s.name).includes(q)) ||
+          (s.address && norm(s.address).includes(q)) ||
+          (s.district && norm(s.district).includes(q)) ||
+          (Array.isArray(s.tags) && s.tags.some(t => typeof t === 'string' && norm(t).includes(q))) ||
+          (s.description && norm(s.description).includes(q))
       );
     }
 

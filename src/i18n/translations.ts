@@ -12,6 +12,9 @@ export const translations = {
 
     // Bottom Navigation
     navHome: 'Trang chủ',
+    navExplore: 'Khám phá',
+    navWishlist: 'Wishlist',
+    navAccount: 'Tài khoản',
     navServices: 'Dịch vụ',
     navSearch: 'Tìm kiếm',
     navChatbot: 'AI Gợi ý',
@@ -76,6 +79,10 @@ export const translations = {
 
     // Home Screen (Bình)
     homeGreeting: 'Xin chào du khách! 🌲',
+    homeHello: 'Xin chào',
+    homeWhereTo: 'Bạn muốn đi đâu?',
+    homeHotDeals: 'Deal hot hôm nay',
+    homeFavoriteSpots: 'Điểm đến yêu thích',
     homeSearchPlaceholder: 'Tìm cà phê ngắm hoàng hôn, homestay, điểm check-in...',
     weatherTitle: 'Thời tiết Đà Lạt hôm nay',
     weatherTip: 'Se se lạnh, thích hợp áo ấm & cà phê sáng!',
@@ -200,6 +207,9 @@ export const translations = {
 
     // Bottom Navigation
     navHome: 'Home',
+    navExplore: 'Explore',
+    navWishlist: 'Wishlist',
+    navAccount: 'Account',
     navServices: 'Services',
     navSearch: 'Search',
     navChatbot: 'AI Guide',
@@ -264,6 +274,10 @@ export const translations = {
 
     // Home Screen (Bình)
     homeGreeting: 'Hello Traveler! 🌲',
+    homeHello: 'Hello',
+    homeWhereTo: 'Where do you want to go?',
+    homeHotDeals: 'Hot deals today',
+    homeFavoriteSpots: 'Favorite destinations',
     homeSearchPlaceholder: 'Search sunset cafes, homestays, attractions...',
     weatherTitle: "Today's Dalat Weather",
     weatherTip: 'Crisp & cool, perfect for a warm jacket and morning coffee!',

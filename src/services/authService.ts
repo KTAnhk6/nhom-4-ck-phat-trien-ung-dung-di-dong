@@ -23,14 +23,9 @@ class AuthService {
       return { success: false, error: 'Tài khoản của bạn đã bị khóa bởi Quản trị viên' };
     }
 
-    // Default password checks:
-    // admin / admin123 or regular demo users / 123456
-    const isValid =
-      (user.username === 'admin' && (passwordPlain === 'admin123' || passwordPlain === '123456')) ||
-      passwordPlain === '123456' ||
-      passwordPlain.length >= 4;
-
-    if (!isValid) {
+    // Mật khẩu mặc định: admin / admin123, các tài khoản mẫu khác / 123456
+    const passwords = await storageService.getPasswords();
+    if (passwords[user.username.toLowerCase()] !== passwordPlain) {
       return { success: false, error: 'Mật khẩu không chính xác' };
     }
 
@@ -69,6 +64,9 @@ class AuthService {
 
     users.push(newUser);
     await storageService.saveUsers(users);
+    const passwords = await storageService.getPasswords();
+    passwords[newUser.username.toLowerCase()] = data.passwordPlain;
+    await storageService.savePasswords(passwords);
     return { success: true, user: newUser };
   }
 
@@ -84,7 +82,9 @@ class AuthService {
       return { success: false, error: 'Không tìm thấy tài khoản với Email/SĐT này' };
     }
 
-    // In a production app, password hash is updated. Here we accept the new password.
+    const passwords = await storageService.getPasswords();
+    passwords[user.username.toLowerCase()] = newPasswordPlain;
+    await storageService.savePasswords(passwords);
     return { success: true };
   }
 

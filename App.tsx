@@ -43,6 +43,7 @@ import { TourismProvider, useTourism } from './src/context/TourismContext';
 // Components
 import { Header } from './src/components/Header';
 import { BottomNav } from './src/components/BottomNav';
+import { FloatingChatButton } from './src/components/FloatingChatButton';
 import { AdBanner } from './src/components/AdBanner';
 import { AppOpenAd } from './src/components/AppOpenAd';
 import { InterstitialAd } from './src/components/InterstitialAd';
@@ -236,6 +237,7 @@ const MainNavigator: React.FC = () => {
       {showHeader && <Header showBack={currentScreen.name !== 'HOME'} />}
       <View style={styles.screenContainer}>
         <ErrorBoundary>{renderActiveScreen()}</ErrorBoundary>
+        <FloatingChatButton visible={!isAuthScreen && currentScreen.name !== 'CHATBOT'} />
       </View>
 
       {/* Google AdMob Banner Ads ở bottom (Mỗi screen đều có banner ads ở bottom theo chuẩn BinhGold24) */}

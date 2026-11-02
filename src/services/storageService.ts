@@ -31,6 +31,7 @@ export const STORAGE_KEYS = {
   SEARCH_HISTORY: '@dalat_search_history_v1',
   NOTIFICATIONS: '@dalat_notifications_v1',
   LANGUAGE: '@dalat_language_v1',
+  PASSWORDS: '@dalat_passwords_v1',
 };
 
 // Safe storage adapter (supports Web localStorage & React Native AsyncStorage)
@@ -159,6 +160,20 @@ class DalatStorageService {
 
   async saveUsers(users: User[]): Promise<void> {
     await storage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+  }
+
+  // PASSWORDS (demo only: lưu theo username viết thường; tài khoản mẫu có mật khẩu mặc định)
+  async getPasswords(): Promise<Record<string, string>> {
+    const defaults: Record<string, string> = {};
+    INITIAL_USERS.forEach(u => {
+      defaults[u.username.toLowerCase()] = u.username === 'admin' ? 'admin123' : '123456';
+    });
+    const json = await storage.getItem(STORAGE_KEYS.PASSWORDS);
+    return { ...defaults, ...(json ? JSON.parse(json) : {}) };
+  }
+
+  async savePasswords(passwords: Record<string, string>): Promise<void> {
+    await storage.setItem(STORAGE_KEYS.PASSWORDS, JSON.stringify(passwords));
   }
 
   // CURRENT USER
