@@ -19,6 +19,7 @@ import { useTourism } from '../../context/TourismContext';
 import { ServiceCard } from '../../components/ServiceCard';
 import { CategoryChip } from '../../components/CategoryChip';
 import { FilterSortModal } from '../../components/FilterSortModal';
+import { DragScrollView } from '../../components/DragScrollView';
 
 export const ServiceListScreen: React.FC = () => {
   const { t, language } = useLanguage();
@@ -31,6 +32,20 @@ export const ServiceListScreen: React.FC = () => {
   } = useTourism();
 
   const [modalVisible, setModalVisible] = useState(false);
+
+  const chipsScrollRef = React.useRef<any>(null);
+  const [chipsScrollX, setChipsScrollX] = useState<number>(0);
+
+  const scrollChips = (direction: 'left' | 'right') => {
+    const delta = 220;
+    const newOffset = direction === 'left' ? Math.max(0, chipsScrollX - delta) : chipsScrollX + delta;
+    setChipsScrollX(newOffset);
+    if (chipsScrollRef.current?.scrollTo) {
+      chipsScrollRef.current.scrollTo({ x: newOffset, animated: true });
+    } else if (chipsScrollRef.current?.scrollLeft !== undefined) {
+      chipsScrollRef.current.scrollLeft = newOffset;
+    }
+  };
 
   const handleSelectCategory = (catId: string) => {
     setFilter(prev => ({
@@ -74,31 +89,52 @@ export const ServiceListScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Horizontal Category Chips */}
-      <View style={styles.chipsContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipsScroll}
+      {/* Horizontal Category Chips (Hỗ trợ kéo chuột, lăn chuột & nút bấm sang ngang) */}
+      <View style={styles.chipsRowWrapper}>
+        <TouchableOpacity
+          style={styles.chipNavBtn}
+          onPress={() => scrollChips('left')}
+          activeOpacity={0.7}
         >
-          <CategoryChip
-            label={t('allCategories')}
-            icon="🌲"
-            isSelected={!filter?.categoryId || filter.categoryId === 'ALL'}
-            onPress={() => setFilter(prev => ({ ...prev, categoryId: 'ALL' }))}
-          />
-          {Array.isArray(categories) &&
-            categories.map(cat => (
-              <CategoryChip
-                key={String(cat.id)}
-                label={language === 'vi' ? cat.nameVi : cat.name}
-                icon={cat.icon}
-                count={cat.count}
-                isSelected={filter?.categoryId === cat.id}
-                onPress={() => handleSelectCategory(cat.id)}
-              />
-            ))}
-        </ScrollView>
+          <Text style={styles.chipNavIcon}>‹</Text>
+        </TouchableOpacity>
+
+        <View style={styles.chipsContainer}>
+          <DragScrollView
+            ref={chipsScrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipsScroll}
+            onScroll={e => setChipsScrollX(e.nativeEvent.contentOffset.x)}
+            scrollEventThrottle={16}
+          >
+            <CategoryChip
+              label={t('allCategories')}
+              icon="🌲"
+              isSelected={!filter?.categoryId || filter.categoryId === 'ALL'}
+              onPress={() => setFilter(prev => ({ ...prev, categoryId: 'ALL' }))}
+            />
+            {Array.isArray(categories) &&
+              categories.map(cat => (
+                <CategoryChip
+                  key={String(cat.id)}
+                  label={language === 'vi' ? cat.nameVi : cat.name}
+                  icon={cat.icon}
+                  count={cat.count}
+                  isSelected={filter?.categoryId === cat.id}
+                  onPress={() => handleSelectCategory(cat.id)}
+                />
+              ))}
+          </DragScrollView>
+        </View>
+
+        <TouchableOpacity
+          style={styles.chipNavBtn}
+          onPress={() => scrollChips('right')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.chipNavIcon}>›</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Header Info: count & active sort */}
@@ -203,11 +239,33 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: colors.secondary,
   },
-  chipsContainer: {
+  chipsRowWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: spacing.xs,
+    paddingHorizontal: 4,
+  },
+  chipsContainer: {
+    flex: 1,
   },
   chipsScroll: {
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: 4,
+  },
+  chipNavBtn: {
+    width: 24,
+    height: 34,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    borderRadius: 8,
+    marginHorizontal: 2,
+    zIndex: 10,
+  },
+  chipNavIcon: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: colors.primary,
+    lineHeight: 22,
   },
   listHeaderRow: {
     flexDirection: 'row',

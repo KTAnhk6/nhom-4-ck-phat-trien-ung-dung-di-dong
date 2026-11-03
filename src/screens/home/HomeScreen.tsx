@@ -19,6 +19,7 @@ import { borderRadius, shadows, spacing } from '../../theme/spacing';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTourism } from '../../context/TourismContext';
 import { ServiceCard } from '../../components/ServiceCard';
+import { DragScrollView } from '../../components/DragScrollView';
 import { DALAT_WEATHER, RECOMMENDED_ROUTES } from '../../data/dalatData';
 
 export const HomeScreen: React.FC = () => {
@@ -164,7 +165,7 @@ export const HomeScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      <DragScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.catScroll}
@@ -185,7 +186,7 @@ export const HomeScreen: React.FC = () => {
             <Text style={styles.catCount}>{cat.count || 0} dịch vụ</Text>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </DragScrollView>
 
       {/* 4. Featured Destinations (Horizontal Carousel) */}
       <View style={styles.sectionHeader}>
@@ -214,7 +215,7 @@ export const HomeScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      <DragScrollView
         ref={featuredScrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -225,7 +226,7 @@ export const HomeScreen: React.FC = () => {
         {featuredServices.map(srv => (
           <ServiceCard key={srv.id} service={srv} layout="horizontal" />
         ))}
-      </ScrollView>
+      </DragScrollView>
 
       {/* 5. AI Chatbot Banner CTA (shortcut to Quang's Chatbot) */}
       <TouchableOpacity
