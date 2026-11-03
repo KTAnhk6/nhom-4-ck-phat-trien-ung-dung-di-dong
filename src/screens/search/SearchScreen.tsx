@@ -129,6 +129,8 @@ export const SearchScreen: React.FC = () => {
               {POPULAR_KEYWORDS.map((keyword, index) => (
                 <TouchableOpacity
                   key={index}
+                  accessibilityRole="button"
+                  accessibilityLabel={`keyword-chip-${keyword}`}
                   style={styles.keywordChip}
                   onPress={() => handleSelectHistory(keyword)}
                 >

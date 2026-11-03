@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   videoOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...(StyleSheet.absoluteFill as any),
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
     padding: spacing.md,
     justifyContent: 'space-between',

@@ -25,6 +25,8 @@ export const CategoryChip: React.FC<CategoryChipProps> = ({
 }) => {
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={`category-chip-${label}`}
       style={[styles.chip, isSelected && styles.selectedChip]}
       onPress={onPress}
       activeOpacity={0.7}

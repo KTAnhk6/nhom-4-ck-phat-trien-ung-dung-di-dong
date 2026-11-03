@@ -14,6 +14,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   BackHandler,
+  Platform,
   StatusBar,
   StyleSheet,
   Text,
@@ -119,6 +120,7 @@ const MainNavigator: React.FC = () => {
 
   // Android hardware back button handler
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     const onBackPress = () => {
       if (currentScreen.name !== 'HOME') {
         goBack();

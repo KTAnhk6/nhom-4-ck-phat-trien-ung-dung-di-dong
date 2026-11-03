@@ -59,6 +59,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   if (layout === 'horizontal') {
     return (
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={`service-card-${service.name}`}
         style={[styles.hCard, shadows.card]}
         onPress={handleCardPress}
         activeOpacity={0.85}
@@ -100,6 +102,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
 
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={`service-card-${service.name}`}
       style={[styles.listCard, shadows.card]}
       onPress={handleCardPress}
       activeOpacity={0.85}

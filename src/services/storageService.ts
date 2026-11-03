@@ -23,13 +23,13 @@ import {
 
 export const STORAGE_KEYS = {
   SERVICES: '@dalat_services_v3',
-  CATEGORIES: '@dalat_categories_v2',
+  CATEGORIES: '@dalat_categories_v3',
   USERS: '@dalat_users_v1',
   CURRENT_USER: '@dalat_current_user_v1',
-  REVIEWS: '@dalat_reviews_v2',
+  REVIEWS: '@dalat_reviews_v3',
   FAVORITES: '@dalat_favorites_v2',
   SEARCH_HISTORY: '@dalat_search_history_v1',
-  NOTIFICATIONS: '@dalat_notifications_v2',
+  NOTIFICATIONS: '@dalat_notifications_v3',
   LANGUAGE: '@dalat_language_v1',
   PASSWORDS: '@dalat_passwords_v1',
 };

@@ -76,7 +76,15 @@ class TourismServiceManager {
 
     // 2. Category Filter
     if (filter.categoryId && filter.categoryId !== 'ALL') {
-      result = result.filter(s => s.categoryId === filter.categoryId);
+      const targetCat = filter.categoryId;
+      const idMap: Record<string, string> = {
+        '1': 'CAT_ATTRACTION',
+        '2': 'CAT_CAFE',
+        '3': 'CAT_FOOD',
+        '4': 'CAT_STAY',
+      };
+      const normalizedTarget = idMap[targetCat] || targetCat;
+      result = result.filter(s => s.categoryId === normalizedTarget || s.categoryId === targetCat);
     }
 
     // 3. District Filter

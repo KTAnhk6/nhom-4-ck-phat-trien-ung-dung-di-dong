@@ -45,7 +45,7 @@ export const HomeScreen: React.FC = () => {
     );
   };
 
-  const featuredScrollRef = React.useRef<ScrollView>(null);
+  const featuredScrollRef = React.useRef<any>(null);
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const scrollFeatured = (direction: 'left' | 'right') => {

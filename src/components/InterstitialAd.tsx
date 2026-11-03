@@ -146,13 +146,13 @@ const styles = StyleSheet.create({
     elevation: 24,
   },
   backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
+    ...(StyleSheet.absoluteFill as any),
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
   darkOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...(StyleSheet.absoluteFill as any),
     backgroundColor: 'rgba(0, 0, 0, 0.52)',
   },
   topHeader: {

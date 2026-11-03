@@ -82,6 +82,8 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Notification Bell */}
             <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="header-notification-bell"
               style={styles.iconButton}
               onPress={() => navigate('NOTIFICATIONS')}
               activeOpacity={0.7}

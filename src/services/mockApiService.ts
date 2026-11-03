@@ -52,6 +52,7 @@ export function normalizeService(raw: any, index: number = 0): TourismService {
     reviewCount: Number(raw.reviewCount) || (50 + (index % 20) * 15),
     openingHours: raw.openingHours || '07:00 - 22:00',
     phone: raw.phone || '0263 382 1234',
+    website: raw.website || undefined,
     images: imagesArr,
     tags: Array.isArray(raw.tags) && raw.tags.length > 0 ? raw.tags : ['Check-in', 'Đà Lạt', 'Du lịch'],
     description: raw.description || 'Địa điểm du lịch và trải nghiệm tuyệt vời tại thành phố ngàn hoa Đà Lạt.',
@@ -179,7 +180,20 @@ class MockApiService {
       throw new Error(`MockAPI Lỗi [${res.status}]: Không thể lấy danh mục`);
     }
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    if (!Array.isArray(data)) return [];
+    const mapCode = (cat: any, idx: number): string => {
+      const name = (cat.nameVi || cat.name || '').toLowerCase();
+      if (name.includes('tham quan') || name.includes('attraction')) return 'CAT_ATTRACTION';
+      if (name.includes('cafe') || name.includes('cà phê')) return 'CAT_CAFE';
+      if (name.includes('ăn') || name.includes('ẩm thực') || name.includes('dining')) return 'CAT_FOOD';
+      if (name.includes('khách sạn') || name.includes('resort') || name.includes('homestay') || name.includes('stay')) return 'CAT_STAY';
+      const defaults = ['CAT_ATTRACTION', 'CAT_CAFE', 'CAT_FOOD', 'CAT_STAY'];
+      return defaults[idx % defaults.length];
+    };
+    return data.map((cat, idx) => ({
+      ...cat,
+      id: mapCode(cat, idx),
+    }));
   }
 
   async createCategory(data: Partial<ServiceCategory>): Promise<ServiceCategory> {

@@ -140,7 +140,7 @@ export const ServiceListScreen: React.FC = () => {
       {/* Header Info: count & active sort */}
       <View style={styles.listHeaderRow}>
         <Text style={styles.resultsCount}>
-          {safeList.length} {t('dalatScope')}
+          {`${safeList.length} ${t('dalatScope')}`}
         </Text>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Text style={styles.sortIndicator}>
