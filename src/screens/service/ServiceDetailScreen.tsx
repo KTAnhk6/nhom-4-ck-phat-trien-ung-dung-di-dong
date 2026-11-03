@@ -174,6 +174,24 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
             <Text style={styles.mapShortcutArrow}>➔</Text>
           </TouchableOpacity>
 
+          {/* Direct Google Maps Navigation (Handbook link) */}
+          {service.website ? (
+            <TouchableOpacity
+              style={[styles.mapShortcut, { marginTop: 8, borderColor: '#D1E7DD', backgroundColor: '#F0F9F5' }]}
+              onPress={() => Linking.openURL(service.website!)}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.mapShortcutIcon}>📍</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.mapShortcutTitle, { color: '#0F5132', fontWeight: '700' }]}>Mở trên Google Maps</Text>
+                <Text style={[styles.mapShortcutCoords, { color: '#198754' }]} numberOfLines={1}>
+                  {service.name} • {service.address}
+                </Text>
+              </View>
+              <Text style={[styles.mapShortcutArrow, { color: '#0F5132' }]}>↗</Text>
+            </TouchableOpacity>
+          ) : null}
+
           {/* Description */}
           <Text style={styles.sectionHeading}>{t('aboutTab')}</Text>
           <Text style={styles.descriptionText}>{service.description}</Text>

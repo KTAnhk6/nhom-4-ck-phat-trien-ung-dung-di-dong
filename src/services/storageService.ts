@@ -22,7 +22,7 @@ import {
 } from '../data/dalatData';
 
 export const STORAGE_KEYS = {
-  SERVICES: '@dalat_services_v2',
+  SERVICES: '@dalat_services_v3',
   CATEGORIES: '@dalat_categories_v2',
   USERS: '@dalat_users_v1',
   CURRENT_USER: '@dalat_current_user_v1',
