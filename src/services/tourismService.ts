@@ -22,7 +22,7 @@ class TourismServiceManager {
     if (API_CONFIG.USE_MOCK_API) {
       try {
         const remoteList = await mockApiService.getServices();
-        if (remoteList && remoteList.length > 0) {
+        if (remoteList && remoteList.length >= 50) {
           // Lưu cache vào local storage để khi offline vẫn mượt mà
           await storageService.saveServices(remoteList);
           return remoteList;

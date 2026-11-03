@@ -236,8 +236,10 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
         lastInterstitialShownRef.current = timestamp;
         setLastInterstitialTime(timestamp);
       };
+      (window as any).__getServicesCount = () => services.length;
+      (window as any).__getServices = () => services;
     }
-  }, [closeInterstitial]);
+  }, [closeInterstitial, services]);
 
   // Hàm kiểm tra và kích hoạt Interstitial Ads khi ấn nút chuyển trang (Chu kỳ: tắt tạm thời trong 3 phút sau khi xem quảng cáo)
   const executeWithInterstitialCheck = (targetScreen: ScreenName, executeAction: () => void) => {

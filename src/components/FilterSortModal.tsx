@@ -48,9 +48,15 @@ export const FilterSortModal: React.FC<FilterSortModalProps> = ({ visible, onClo
     'Phường 3',
     'Phường 4',
     'Phường 5',
+    'Phường 6',
     'Phường 9',
+    'Phường 10',
     'Phường 11',
-    'Xuân Trường',
+    'Trại Mát',
+    'Trạm Hành',
+    'Lạc Dương',
+    'Tà Nung',
+    'Đức Trọng',
   ];
 
   const handleApply = () => {

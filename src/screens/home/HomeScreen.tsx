@@ -19,7 +19,7 @@ import { borderRadius, shadows, spacing } from '../../theme/spacing';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTourism } from '../../context/TourismContext';
 import { ServiceCard } from '../../components/ServiceCard';
-import { DALAT_WEATHER } from '../../data/dalatData';
+import { DALAT_WEATHER, RECOMMENDED_ROUTES } from '../../data/dalatData';
 
 export const HomeScreen: React.FC = () => {
   const { t, language } = useLanguage();
@@ -259,7 +259,27 @@ export const HomeScreen: React.FC = () => {
         ))}
       </View>
 
-      {/* 7. Dalat Experience Tips */}
+      {/* 7. Dalat Curated Routes from Travel Handbook */}
+      <View style={[styles.tipsCard, shadows.card]}>
+        <Text style={styles.tipsTitle}>🗺️ Gợi ý 3 cung đường khám phá tối ưu nhất</Text>
+        {RECOMMENDED_ROUTES.map(route => (
+          <View key={route.id} style={{ marginBottom: 12 }}>
+            <Text style={{ fontWeight: '700', fontSize: 13, color: colors.primaryDark }}>
+              {route.name}
+            </Text>
+            <Text style={{ fontSize: 11, color: colors.textLight, marginTop: 2, marginBottom: 4 }}>
+              📍 Điểm qua: {route.waypoints.join(' ➔ ')}
+            </Text>
+            {route.schedule.map((item, idx) => (
+              <Text key={idx} style={{ fontSize: 11, color: colors.text, marginLeft: 6, lineHeight: 16 }}>
+                {item}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
+
+      {/* 8. Dalat Experience Tips */}
       <View style={[styles.tipsCard, shadows.card]}>
         <Text style={styles.tipsTitle}>💡 {t('dalatExperienceTips')}</Text>
         <View style={styles.tipItem}>

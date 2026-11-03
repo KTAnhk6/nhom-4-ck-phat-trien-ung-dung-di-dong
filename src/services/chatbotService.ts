@@ -23,12 +23,36 @@ class DalatChatbotService {
       textLower.includes('binh minh')
     ) {
       recommended = allServices.filter(
-        s => s.tags.some(t => t.toLowerCase().includes('săn mây') || t.toLowerCase().includes('bình minh')) ||
-        s.name.toLowerCase().includes('săn mây') ||
-        s.categoryId === 'CAT_TOUR'
+        s =>
+          s.tags.some(t => t.toLowerCase().includes('săn mây') || t.toLowerCase().includes('bình minh')) ||
+          s.id === 'SRV_12_DOI_CHE_CAU_DAT' ||
+          s.id === 'SRV_18_BINH_MINH_OI'
       );
       responseText =
-        '🌲 Để săn mây tại Đà Lạt trọn vẹn nhất, bạn nên thức dậy từ 4h00 - 4h30 sáng nhé! Thời điểm mây cuồn cuộn đẹp nhất là từ 5h00 - 6h30 sáng tại khu vực Đồi Chè Cầu Đất hoặc Trại Mát. Dưới đây là tour và địa điểm săn mây hoàn hảo nhất dành cho bạn:';
+        '🌲 Để săn mây tại Đà Lạt trọn vẹn nhất, bạn nên thức dậy từ 4h30 - 5h00 sáng nhé! Thời điểm mây cuồn cuộn đẹp nhất là lúc 5h30 tại khu vực Đồi Chè Cầu Đất hoặc Tiệm Cà Phê Bình Minh Ơi (Hoàng Hoa Thám). Dưới đây là tọa độ săn mây lý tưởng nhất dành cho bạn:';
+    }
+    // 1b. Cung đường / Lịch trình khám phá
+    else if (
+      textLower.includes('cung đường') ||
+      textLower.includes('cung duong') ||
+      textLower.includes('lịch trình') ||
+      textLower.includes('lich trinh') ||
+      textLower.includes('lộ trình') ||
+      textLower.includes('lo trinh') ||
+      textLower.includes('itinerary')
+    ) {
+      recommended = allServices.filter(
+        s =>
+          s.id === 'SRV_12_DOI_CHE_CAU_DAT' ||
+          s.id === 'SRV_09_THAC_DATANLA' ||
+          s.id === 'SRV_03_GA_DA_LAT' ||
+          s.id === 'SRV_28_LAU_GA_TAO_NGO'
+      ).slice(0, 4);
+      responseText =
+        '🗺️ Cẩm nang du lịch Đà Lạt gợi ý bạn 3 CUNG ĐƯỜNG KHÁM PHÁ tối ưu cự ly và thời gian nhất:\n\n' +
+        '1️⃣ Cung 1 (Đông Nam): Đồi chè Cầu Đất (5h00) ➜ Chùa Ve Chai (8h30) ➜ Túi Mơ To (10h00) ➜ Xóm Lèo ngắm đèn (17h00).\n' +
+        '2️⃣ Cung 2 (Phía Nam): Máng trượt Datanla (8h30) ➜ Thiền Viện Trúc Lâm (11h00) ➜ Hồ Tuyền Lâm & Gà nướng Đồi Trăng (12h30) ➜ Lululola acoustic (16h30).\n' +
+        '3️⃣ Cung 3 (Trung tâm < 2km): Bánh mì xíu mại Hoàng Diệu (7h00) ➜ Ga Đà Lạt & Dinh III (8h30) ➜ Lẩu bò Ba Toa (12h00) ➜ Chợ Đêm Đà Lạt (18h30).';
     }
     // 2. Sunset view / Cafe view thung lũng / Hoàng hôn
     else if (
@@ -60,12 +84,12 @@ class DalatChatbotService {
       recommended = allServices.filter(
         s =>
           s.tags.some(t => t.toLowerCase().includes('lãng mạn') || t.toLowerCase().includes('cặp đôi')) ||
-          s.id === 'SRV_TUI_MO_TO' ||
-          s.id === 'SRV_CHU_DAU_HOMESTAY' ||
-          s.id === 'SRV_LULULOLA_COFFEE'
+          s.id === 'SRV_16_TUI_MO_TO' ||
+          s.id === 'SRV_48_DOI_MOT_NGUOI' ||
+          s.id === 'SRV_19_LULULOLA_COFFEE'
       ).slice(0, 3);
       responseText =
-        '💖 Dành cho chuyến đi lãng mạn 2 người tại xứ sở ngàn hoa: Mình gợi ý bạn ghé Tiệm Cà Phê Túi Mơ To ngắm cúc họa mi, đêm nhạc acoustic Lululola lắng đọng và nghỉ dưỡng tại Chu Đậu Homestay view thung lũng ấm áp nhé!';
+        '💖 Dành cho chuyến đi lãng mạn 2 người tại xứ sở ngàn hoa: Mình gợi ý bạn ghé Tiệm Cà Phê Túi Mơ To ngắm cúc họa mi, đêm nhạc acoustic Lululola lắng đọng và nghỉ dưỡng tại Đợi Một Người Homestay view thung lũng ấm áp nhé!';
     }
     // 4. Food / Ăn uống / Lẩu gà lá é / Bánh tráng nướng
     else if (
@@ -92,7 +116,7 @@ class DalatChatbotService {
     ) {
       recommended = allServices.filter(s => s.categoryId === 'CAT_STAY').slice(0, 3);
       responseText =
-        '🏡 Để có trải nghiệm lưu trú trọn vẹn tại Đà Lạt: Nếu thích đi bộ dạo chợ Đêm bạn nên chọn Khách sạn Colline ngay Dalat Center. Còn nếu thích không gian mộc mạc ngắm đồi thông thì Chu Đậu Homestay là lựa chọn số 1:';
+        '🏡 Để có trải nghiệm lưu trú trọn vẹn tại Đà Lạt: Nếu thích đi bộ dạo chợ Đêm bạn nên chọn Khách sạn Colline ngay Dalat Center. Còn nếu thích không gian mộc mạc ngắm đồi thông thì Đợi Một Người hoặc Là Nhà Homestay là lựa chọn số 1:';
     }
     // 6. Check-in / Tham quan / Địa điểm đẹp / Chụp hình
     else if (

@@ -22,14 +22,14 @@ import {
 } from '../data/dalatData';
 
 export const STORAGE_KEYS = {
-  SERVICES: '@dalat_services_v1',
-  CATEGORIES: '@dalat_categories_v1',
+  SERVICES: '@dalat_services_v2',
+  CATEGORIES: '@dalat_categories_v2',
   USERS: '@dalat_users_v1',
   CURRENT_USER: '@dalat_current_user_v1',
-  REVIEWS: '@dalat_reviews_v1',
-  FAVORITES: '@dalat_favorites_v1',
+  REVIEWS: '@dalat_reviews_v2',
+  FAVORITES: '@dalat_favorites_v2',
   SEARCH_HISTORY: '@dalat_search_history_v1',
-  NOTIFICATIONS: '@dalat_notifications_v1',
+  NOTIFICATIONS: '@dalat_notifications_v2',
   LANGUAGE: '@dalat_language_v1',
   PASSWORDS: '@dalat_passwords_v1',
 };
@@ -77,13 +77,13 @@ class DalatStorageService {
     try {
       // 1. Categories
       const catJson = await storage.getItem(STORAGE_KEYS.CATEGORIES);
-      if (!catJson) {
+      if (!catJson || JSON.parse(catJson).length < INITIAL_CATEGORIES.length) {
         await storage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(INITIAL_CATEGORIES));
       }
 
-      // 2. Services
+      // 2. Services (50 địa danh tiêu biểu từ cẩm nang)
       const srvJson = await storage.getItem(STORAGE_KEYS.SERVICES);
-      if (!srvJson) {
+      if (!srvJson || JSON.parse(srvJson).length < 50) {
         await storage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(INITIAL_SERVICES));
       }
 
@@ -108,7 +108,10 @@ class DalatStorageService {
       // 6. Favorites
       const favJson = await storage.getItem(STORAGE_KEYS.FAVORITES);
       if (!favJson) {
-        await storage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(['SRV_TUI_MO_TO', 'SRV_HO_TUYEN_LAM']));
+        await storage.setItem(
+          STORAGE_KEYS.FAVORITES,
+          JSON.stringify(['SRV_16_TUI_MO_TO', 'SRV_07_HO_TUYEN_LAM', 'SRV_28_LAU_GA_TAO_NGO'])
+        );
       }
 
       // 7. Search History
@@ -135,7 +138,14 @@ class DalatStorageService {
   // SERVICES CRUD
   async getServices(): Promise<TourismService[]> {
     const json = await storage.getItem(STORAGE_KEYS.SERVICES);
-    return json ? JSON.parse(json) : INITIAL_SERVICES;
+    if (!json) return INITIAL_SERVICES;
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed) && parsed.length >= 50) {
+        return parsed;
+      }
+    } catch {}
+    return INITIAL_SERVICES;
   }
 
   async saveServices(services: TourismService[]): Promise<void> {
