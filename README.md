@@ -94,3 +94,7 @@ Tại màn hình Đăng nhập (Login) hoặc Trang cá nhân (Profile), đã c�
   - Tài khoản: `tuananh`
   - Mật khẩu: `123456`
 - **Mã OTP khôi phục mật khẩu demo**: `123456`
+## 6. Link drive họp nhóm:
+* [Link Drive họp nhóm tuần 1](https://drive.google.com/file/d/1QAphEp2UbY--LHKKas2vd1iUwyvQNodV/view?usp=sharing)
+* [Link Drive họp nhóm tuần 2](https://drive.google.com/file/d/1Zn7Xkr6i1ysmA_QynVV2OH68lLe4NTt-/view?usp=sharing)
+* [Link Drive họp nhóm tuần 3](https://drive.google.com/file/d/1gKdDfPstne54PJSc1WNU5VM3PzQMApmR/view?usp=sharing)
