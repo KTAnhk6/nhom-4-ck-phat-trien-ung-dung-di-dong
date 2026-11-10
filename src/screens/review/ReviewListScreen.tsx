@@ -19,7 +19,7 @@ import { useTourism } from '../../context/TourismContext';
 import { RatingStars } from '../../components/RatingStars';
 import { AddReviewModal } from './AddReviewModal';
 import { Review } from '../../types';
-import { tourismService } from '../../services/tourismService';
+import { isSameServiceId, tourismService } from '../../services/tourismService';
 
 interface ReviewListScreenProps {
   serviceId?: string;
@@ -30,7 +30,7 @@ export const ReviewListScreen: React.FC<ReviewListScreenProps> = ({ serviceId })
   const { services, goBack, currentScreen } = useTourism();
 
   const id = serviceId || currentScreen.serviceId;
-  const service = services.find(s => s.id === id);
+  const service = services.find(s => isSameServiceId(s.id, id));
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -130,7 +130,13 @@ export const ReviewListScreen: React.FC<ReviewListScreenProps> = ({ serviceId })
         renderItem={({ item }) => (
           <View style={[styles.reviewCard, shadows.subtle]}>
             <View style={styles.reviewHeaderRow}>
-              <Image source={{ uri: item.userAvatar }} style={styles.avatar} />
+              {item.userAvatar && item.userId !== 'USR_ADMIN' ? (
+                <Image source={{ uri: item.userAvatar }} style={styles.avatar} />
+              ) : (
+                <View style={styles.defaultAvatar}>
+                  <Text style={{ fontSize: 18 }}>👤</Text>
+                </View>
+              )}
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={styles.userName}>{item.userName}</Text>
                 <View style={styles.starRow}>
@@ -307,6 +313,16 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
+  },
+  defaultAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.cardMuted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   userName: {
     fontSize: 13,

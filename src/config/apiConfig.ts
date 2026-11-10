@@ -4,6 +4,10 @@
  */
 
 export const API_CONFIG = {
+  // Cấu hình kết nối MySQL Database REST API (/api/mysql/*)
+  MYSQL_API_BASE_URL: '/api/mysql',
+  USE_MYSQL_DATABASE: true,
+
   // Đường link Clone dự án mà bạn đã chia sẻ
   MOCK_API_CLONE_URL: 'https://mockapi.io/clone/6ae06809be3bc8fead971b4e',
 

@@ -1,6 +1,31 @@
 /// <reference lib="dom" />
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { Alert } from 'react-native';
+
+// Polyfill Alert.alert for Web because react-native-web has empty alert()
+if (typeof window !== 'undefined') {
+  (Alert as any).alert = (title?: string, message?: string, buttons?: any[]) => {
+    const text = [title, message].filter(Boolean).join('\n\n');
+    if (!buttons || buttons.length === 0) {
+      window.alert(text);
+      return;
+    }
+    if (buttons.length === 1) {
+      window.alert(text);
+      buttons[0]?.onPress?.();
+      return;
+    }
+    const cancelBtn = buttons.find((b: any) => b.style === 'cancel');
+    const actionBtn = buttons.find((b: any) => b.style !== 'cancel') || buttons[buttons.length - 1];
+    const ok = window.confirm(text);
+    if (ok) {
+      actionBtn?.onPress?.();
+    } else {
+      cancelBtn?.onPress?.();
+    }
+  };
+}
 
 window.addEventListener('error', (event) => {
   console.error('CRITICAL WINDOW ERROR:', event.error || event.message);

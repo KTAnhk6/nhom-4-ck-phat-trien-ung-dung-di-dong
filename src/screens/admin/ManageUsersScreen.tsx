@@ -103,7 +103,13 @@ export const ManageUsersScreen: React.FC = () => {
           return (
             <View style={[styles.userCard, shadows.card]}>
               <View style={styles.cardRow}>
-                <Image source={{ uri: item.avatar }} style={styles.avatar} />
+                {!isAdmin && item.avatar ? (
+                  <Image source={{ uri: item.avatar }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.defaultAvatar}>
+                    <Text style={styles.defaultAvatarIcon}>👤</Text>
+                  </View>
+                )}
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <View style={styles.nameRow}>
                     <Text style={styles.fullName}>{item.fullName}</Text>
@@ -251,6 +257,19 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
+  },
+  defaultAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.cardMuted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  defaultAvatarIcon: {
+    fontSize: 22,
   },
   nameRow: {
     flexDirection: 'row',

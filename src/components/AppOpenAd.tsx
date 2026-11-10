@@ -21,13 +21,15 @@ import {
 import { ADMOB_CONFIG } from '../config/apiConfig';
 import { colors } from '../theme/colors';
 import { borderRadius, shadows, spacing } from '../theme/spacing';
+import { useAuth } from '../context/AuthContext';
 
 interface AppOpenAdProps {
   onClose?: () => void;
 }
 
 export const AppOpenAd: React.FC<AppOpenAdProps> = ({ onClose }) => {
-  // Tự động bật quảng cáo khi vừa vào app
+  const { isAdmin } = useAuth();
+  // Tự động bật quảng cáo khi vừa vào app (trừ Admin)
   const [visible, setVisible] = useState<boolean>(true);
   const [elapsed, setElapsed] = useState<number>(0); // Đã trôi qua bao nhiêu giây (0 -> 15)
   const TOTAL_DURATION = 15; // 15 giây
@@ -77,7 +79,7 @@ export const AppOpenAd: React.FC<AppOpenAdProps> = ({ onClose }) => {
     );
   };
 
-  if (!ADMOB_CONFIG.IS_ENABLED || !visible) {
+  if (!ADMOB_CONFIG.IS_ENABLED || !visible || isAdmin) {
     return null;
   }
 

@@ -1846,7 +1846,7 @@ export const INITIAL_REVIEWS: Review[] = [
     "serviceName": "Hôtel Colline",
     "userId": "USR_ADMIN",
     "userName": "Việt (Admin)",
-    "userAvatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
+    "userAvatar": "",
     "rating": 5,
     "comment": "Vị trí đắc địa ngay Dalat Center, chỉ cần đi bộ 3 phút là xuống ngay chợ đêm. Phòng ốc thiết kế hiện đại sang trọng.",
     "createdAt": "2026-03-03T14:00:00Z",
@@ -1861,7 +1861,7 @@ export const INITIAL_USERS: User[] = [
     "email": "admin.dalat@wander.vn",
     "fullName": "Việt (Admin Quản Trị)",
     "phone": "0988776655",
-    "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
+    "avatar": "",
     "role": "admin",
     "status": "active",
     "createdAt": "2026-01-01T00:00:00Z"

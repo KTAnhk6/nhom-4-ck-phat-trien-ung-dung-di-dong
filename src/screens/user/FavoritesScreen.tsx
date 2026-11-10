@@ -16,12 +16,15 @@ import { borderRadius, spacing } from '../../theme/spacing';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTourism } from '../../context/TourismContext';
 import { ServiceCard } from '../../components/ServiceCard';
+import { isSameServiceId } from '../../services/tourismService';
 
 export const FavoritesScreen: React.FC = () => {
   const { t } = useLanguage();
   const { services, favorites, goBack, navigate } = useTourism();
 
-  const favoriteServices = services.filter(s => favorites.includes(s.id));
+  const favoriteServices = services.filter(s =>
+    favorites.some(favId => isSameServiceId(s.id, favId))
+  );
 
   return (
     <View style={styles.container}>

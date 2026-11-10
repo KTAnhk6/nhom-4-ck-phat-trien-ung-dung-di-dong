@@ -116,7 +116,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, Error
 const MainNavigator: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { currentScreen, goBack, isLoading } = useTourism();
-  const { currentUser, isLoading: authLoading } = useAuth();
+  const { currentUser, isAdmin, isLoading: authLoading } = useAuth();
 
   // Android hardware back button handler
   useEffect(() => {
@@ -155,6 +155,7 @@ const MainNavigator: React.FC = () => {
 
   // Determine which screens need top Header and Bottom Navigation
   const isAuthScreen =
+    !currentUser ||
     currentScreen.name === 'LOGIN' ||
     currentScreen.name === 'REGISTER' ||
     currentScreen.name === 'FORGOT_PASSWORD';
@@ -162,15 +163,23 @@ const MainNavigator: React.FC = () => {
   const isDetailScreen = currentScreen.name === 'SERVICE_DETAIL';
 
   const showBottomNav =
-    currentScreen.name === 'HOME' ||
-    currentScreen.name === 'SERVICE_LIST' ||
-    currentScreen.name === 'SEARCH' ||
-    currentScreen.name === 'CHATBOT' ||
-    currentScreen.name === 'PROFILE';
+    !!currentUser &&
+    (currentScreen.name === 'HOME' ||
+      currentScreen.name === 'SERVICE_LIST' ||
+      currentScreen.name === 'SEARCH' ||
+      currentScreen.name === 'CHATBOT' ||
+      currentScreen.name === 'PROFILE');
 
-  const showHeader = !isAuthScreen && !isDetailScreen;
+  const showHeader = !!currentUser && !isAuthScreen && !isDetailScreen;
 
   const renderActiveScreen = () => {
+    // Nếu chưa đăng nhập (hoặc vừa bấm Đăng xuất), luôn hiển thị màn hình Auth (Login)
+    if (!currentUser) {
+      if (currentScreen.name === 'REGISTER') return <RegisterScreen />;
+      if (currentScreen.name === 'FORGOT_PASSWORD') return <ForgotPasswordScreen />;
+      return <LoginScreen />;
+    }
+
     switch (currentScreen.name) {
       // Auth & Profile (Tuấn Anh)
       case 'LOGIN':
@@ -190,7 +199,12 @@ const MainNavigator: React.FC = () => {
       case 'SERVICE_LIST':
         return <ServiceListScreen />;
       case 'SERVICE_DETAIL':
-        return <ServiceDetailScreen serviceId={currentScreen.serviceId} />;
+        return (
+          <ServiceDetailScreen
+            key={currentScreen.serviceId}
+            serviceId={currentScreen.serviceId}
+          />
+        );
 
       // Search & Chatbot (Quang)
       case 'SEARCH':
@@ -242,18 +256,20 @@ const MainNavigator: React.FC = () => {
         <FloatingChatButton visible={!isAuthScreen && currentScreen.name !== 'CHATBOT'} />
       </View>
 
-      {/* Google AdMob Banner Ads ở bottom (Mỗi screen đều có banner ads ở bottom theo chuẩn BinhGold24) */}
-      <View style={styles.bottomBannerWrapper}>
-        <BannerAd
-          unitId={TestIds.BANNER}
-          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-          requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-        />
-      </View>
+      {/* Google AdMob Banner Ads ở bottom (Ẩn hoàn toàn đối với tài khoản Admin) */}
+      {!isAdmin && (
+        <View style={styles.bottomBannerWrapper}>
+          <BannerAd
+            unitId={TestIds.BANNER}
+            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+            requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+          />
+        </View>
+      )}
 
       {showBottomNav && <BottomNav />}
-      <AppOpenAd />
-      <InterstitialAd />
+      {!isAdmin && <AppOpenAd />}
+      {!isAdmin && <InterstitialAd />}
     </View>
   );
 };

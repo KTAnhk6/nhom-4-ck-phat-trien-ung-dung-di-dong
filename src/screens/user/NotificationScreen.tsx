@@ -3,7 +3,7 @@
  * System notifications, Dalat festival announcements, discounts, and personalized suggestions.
  */
 
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   FlatList,
   StyleSheet,
@@ -15,18 +15,128 @@ import { colors } from '../../theme/colors';
 import { borderRadius, shadows, spacing } from '../../theme/spacing';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTourism } from '../../context/TourismContext';
-import { NotificationItem } from '../../types';
+import { isSameServiceId } from '../../services/tourismService';
+import { NotificationItem, TourismService } from '../../types';
+
+// Các tọa độ thuộc 3 cụm cung đường: Trại Mát & Cầu Đất, Đèo Prenn & Hồ Tuyền Lâm, Phố cổ Trung tâm
+const THREE_ROUTES_SERVICE_IDS = [
+  // Cụm 1: Trại Mát & Cầu Đất
+  'SRV_12_DOI_CHE_CAU_DAT',
+  'SRV_08_CHUA_LINH_PHUOC',
+  'SRV_16_TUI_MO_TO',
+  'SRV_17_CHEO_VEOOO',
+  'SRV_18_BINH_MINH_OI',
+  'SRV_20_MAY_LANG_THANG',
+  'SRV_22_BA_QUA_DOI',
+  'SRV_23_LOI_CUA_GIO',
+  'SRV_26_KONG_CAFE',
+  'SRV_03_GA_DA_LAT',
+  'SRV_04_DINH_1_BAO_DAI',
+  'SRV_48_DOI_MOT_NGUOI',
+  // Cụm 2: Đèo Prenn & Hồ Tuyền Lâm
+  'SRV_06_THIEN_VIEN_TRUC_LAM',
+  'SRV_07_HO_TUYEN_LAM',
+  'SRV_09_THAC_DATANLA',
+  'SRV_19_LULULOLA_COFFEE',
+  'SRV_27_HORIZON_COFFEE',
+  'SRV_39_GA_NUONG_DOI_TRANG',
+  'SRV_43_TERRACOTTA_RESORT',
+  'SRV_44_SWISS_BELRESORT',
+  'SRV_47_THE_KUPID_HILL',
+  'SRV_49_NHA_BEN_RUNG',
+  // Cụm 3: Phố cổ Trung tâm
+  'SRV_01_QUANG_TRUONG_LAM_VIEN',
+  'SRV_02_HO_XUAN_HUONG',
+  'SRV_14_NHA_THO_CON_GA',
+  'SRV_13_DOMAINE_DE_MARIE',
+  'SRV_05_DINH_3_BAO_DAI',
+  'SRV_24_CAFE_TUNG',
+  'SRV_25_AN_CAFE',
+  'SRV_21_DALAT_GOLF_CAFE',
+  'SRV_28_LAU_GA_TAO_NGO',
+  'SRV_29_LAU_BO_BA_TOA',
+  'SRV_31_BANH_CAN_NHA_CHUNG',
+  'SRV_32_BANH_MI_XIU_MAI_HOANG_DIEU',
+  'SRV_34_BANH_UOT_LONG_GA_TRANG',
+  'SRV_35_KEM_BO_THANH_THAO',
+  'SRV_40_CHO_DEM_DA_LAT',
+  'SRV_41_DALAT_PALACE',
+  'SRV_46_HOTEL_COLLINE',
+];
+
+// Các món lẩu & món nóng đêm se lạnh (Lẩu Gà Lá É & Bò Ba Toa)
+const HOTPOT_WARM_NIGHT_IDS = [
+  'SRV_28_LAU_GA_TAO_NGO',
+  'SRV_29_LAU_BO_BA_TOA',
+];
 
 export const NotificationScreen: React.FC = () => {
   const { t, language } = useLanguage();
   const {
     notifications,
+    services,
     markAllNotificationsRead,
     goBack,
     navigateToDetail,
   } = useTourism();
 
+  // Lưu lại địa điểm vừa mở gần nhất của từng thông báo để lần bấm tiếp theo luôn ra địa điểm mới
+  const lastPickedRef = useRef<Record<string, string>>({});
+
+  const pickRandomFromPool = (notifId: string, pool: TourismService[]): TourismService | null => {
+    if (pool.length === 0) return null;
+    if (pool.length === 1) return pool[0];
+    const lastId = lastPickedRef.current[notifId];
+    const candidates = lastId ? pool.filter(s => s.id !== lastId) : pool;
+    const finalPool = candidates.length > 0 ? candidates : pool;
+    const picked = finalPool[Math.floor(Math.random() * finalPool.length)];
+    lastPickedRef.current[notifId] = picked.id;
+    return picked;
+  };
+
   const handleNotificationPress = (notif: NotificationItem) => {
+    const titleLower = (notif.titleVi || notif.title || '').toLowerCase();
+
+    // 1. Thông báo 1: Cẩm nang 50 tọa độ du lịch Đà Lạt -> Chọn ngẫu nhiên 1 trong 50 tọa độ
+    if (notif.id === 'NOTIF_1' || titleLower.includes('50 tọa độ')) {
+      const picked = pickRandomFromPool(notif.id, services);
+      if (picked) {
+        navigateToDetail(picked.id);
+      }
+      return;
+    }
+
+    // 2. Thông báo 2: Gợi ý 3 cung đường khám phá Đà Lạt -> Chọn ngẫu nhiên 1 địa điểm thuộc 3 cụm cung đường
+    if (notif.id === 'NOTIF_2' || titleLower.includes('3 cung đường')) {
+      const routePool = THREE_ROUTES_SERVICE_IDS.map(id =>
+        services.find(s => isSameServiceId(s.id, id))
+      ).filter((s): s is TourismService => Boolean(s));
+      const picked = pickRandomFromPool(
+        notif.id,
+        routePool.length > 0 ? routePool : services
+      );
+      if (picked) {
+        navigateToDetail(picked.id);
+      }
+      return;
+    }
+
+    // 3. Thông báo 3: Thưởng thức Lẩu Gà Lá É & Bò Ba Toa -> Chọn ngẫu nhiên giữa Lẩu Gà Lá É và Lẩu Bò Ba Toa
+    if (notif.id === 'NOTIF_3' || titleLower.includes('lẩu gà lá é')) {
+      const hotpotPool = HOTPOT_WARM_NIGHT_IDS.map(id =>
+        services.find(s => isSameServiceId(s.id, id))
+      ).filter((s): s is TourismService => Boolean(s));
+      const picked = pickRandomFromPool(
+        notif.id,
+        hotpotPool.length > 0 ? hotpotPool : services
+      );
+      if (picked) {
+        navigateToDetail(picked.id);
+      }
+      return;
+    }
+
+    // Thông báo khác có gắn linkServiceId
     if (notif.linkServiceId) {
       navigateToDetail(notif.linkServiceId);
     }
@@ -251,15 +361,14 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.xxxl,
+    paddingVertical: spacing.xxl,
   },
   emptyEmoji: {
     fontSize: 40,
-    marginBottom: spacing.sm,
   },
   emptyTitle: {
     fontSize: 14,
     color: colors.textMuted,
+    marginTop: 8,
   },
 });

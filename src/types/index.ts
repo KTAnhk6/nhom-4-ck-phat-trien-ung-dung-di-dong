@@ -3,7 +3,7 @@
  * TypeScript Data Models and Interfaces
  */
 
-export type Role = 'user' | 'admin';
+export type Role = 'user' | 'admin' | 'guest';
 export type UserStatus = 'active' | 'blocked';
 export type Language = 'vi' | 'en';
 
@@ -141,6 +141,7 @@ export interface ScreenState {
   serviceId?: string;
   categoryId?: string;
   searchQuery?: string;
+  notificationId?: string;
   returnScreen?: ScreenName;
 }
 

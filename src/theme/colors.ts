@@ -1,45 +1,58 @@
 /**
- * Theme Color Palette - Dalat Tourism Inspired
- * Pine forest greens, warm sunset terracotta, and crisp highland tones.
+ * Modern Editorial Color Palette - Dalat Wander
+ * Inspired by luxury travel publications (Kinfolk, Monocle, Cereal).
+ * Monochromatic foundations with warm natural paper tones, deep pine ink, and sepia terracotta.
  */
 
 export const colors = {
-  primary: '#1B4D3E',        // Pine Forest Green
-  primaryDark: '#0F2F26',    // Deep Pine
-  primaryLight: '#2D6A4F',   // Highland Green
-  primaryMuted: '#E8F3EE',   // Mist Green Tint
-  
-  secondary: '#E76F51',      // Dalat Sunset Terracotta
-  secondaryLight: '#F4A261',  // Marigold Warmth
-  secondaryMuted: '#FDF0EC', // Warm Tint
+  // Editorial Primary Ink (Deep Pine & Noir)
+  primary: '#1A2E26',        // Deep Highland Pine Ink
+  primaryDark: '#0E1A15',    // Obsidian Forest Noir
+  primaryLight: '#2C4A3E',   // Muted Sage Ink
+  primaryMuted: '#EAEFEA',   // Whisper Linen Mist
 
-  accent: '#2A9D8F',         // Highland Stream Teal
-  accentGold: '#E9C46A',     // D’ran Wild Sunflower Yellow
+  // Warm Terracotta & Sepia Clay Accent
+  secondary: '#9E5A3C',      // Dalat Earth Terracotta
+  secondaryLight: '#BA7556',  // Amber Sepia Warmth
+  secondaryMuted: '#F6ECE6', // Delicate Terracotta Linen
 
-  background: '#F8FAF9',     // Fresh misty white background
-  card: '#FFFFFF',           // Crisp white card
-  cardMuted: '#F1F5F3',      // Subdued container
+  // Antique Ochre & Wild Sunflower Gold
+  accent: '#7A5B3E',         // Antique Sepia
+  accentGold: '#C59A2B',     // D’ran Wild Sunflower Ochre
 
-  text: '#1E293B',           // Deep slate body text
-  textMuted: '#64748B',      // Secondary caption text
-  textLight: '#94A3B8',      // Tertiary placeholder text
+  // Modern Editorial Paper & Containers
+  background: '#FAF8F5',     // Warm Natural Newsprint / Editorial Ivory
+  card: '#FFFFFF',           // Crisp White Editorial Card
+  cardMuted: '#F3EFEA',      // Warm Textured Paper Card
+
+  // Thanh tác vụ đơn màu (Solid Monochromatic Taskbar)
+  taskbarBg: '#181818',      // Monochromatic Obsidian Noir
+  taskbarBorder: '#282828',  // Hairline Dark Divider
+  taskbarActive: '#FFFFFF',  // High-contrast Pure White
+  taskbarInactive: '#828282',// Refined Muted Silver
+
+  // Typography Tones
+  text: '#181818',           // High-contrast Obsidian Ink
+  textMuted: '#5C5852',      // Warm Charcoal Body
+  textLight: '#948E84',      // Soft Editorial Stone
   textWhite: '#FFFFFF',
 
-  border: '#E2E8F0',         // Soft border
-  borderLight: '#EDF2F7',    // Ultra soft divider
+  // Hairline Borders (Magazine Dividers)
+  border: '#E6E1D8',         // Warm Stone Hairline
+  borderLight: '#F0ECE4',    // Ultra-fine Paper Divider
 
-  success: '#10B981',
-  successLight: '#D1FAE5',
-  warning: '#F59E0B',
-  warningLight: '#FEF3C7',
-  danger: '#EF4444',
-  dangerLight: '#FEE2E2',
-  info: '#3B82F6',
-  infoLight: '#DBEAFE',
+  // Refined Status Accents
+  success: '#2E694D',
+  successLight: '#E8F2EC',
+  warning: '#B46B1C',
+  warningLight: '#FDF4E7',
+  danger: '#A83232',
+  dangerLight: '#FBECEC',
+  info: '#2C5E8A',
+  infoLight: '#EAF2F9',
 
-  star: '#F59E0B',           // Golden star rating
+  star: '#C59A2B',
 
-  // Gradients simulation / hero overlays
-  overlayDark: 'rgba(0, 0, 0, 0.45)',
-  overlayLight: 'rgba(255, 255, 255, 0.9)',
+  overlayDark: 'rgba(20, 20, 20, 0.65)',
+  overlayLight: 'rgba(250, 248, 245, 0.94)',
 };

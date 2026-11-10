@@ -3,7 +3,7 @@
  * Rich detail presentation of a Dalat tourism spot with photos, hours, prices, map & reviews.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -16,13 +16,14 @@ import {
 } from 'react-native';
 import { colors } from '../../theme/colors';
 import { borderRadius, shadows, spacing } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTourism } from '../../context/TourismContext';
 import { RatingStars } from '../../components/RatingStars';
 import { ServiceCard } from '../../components/ServiceCard';
 import { AdBanner } from '../../components/AdBanner';
 import { Review } from '../../types';
-import { tourismService } from '../../services/tourismService';
+import { isSameServiceId, tourismService } from '../../services/tourismService';
 
 interface ServiceDetailScreenProps {
   serviceId?: string;
@@ -41,12 +42,29 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
   } = useTourism();
 
   const id = serviceId || currentScreen.serviceId;
-  const service = services.find(s => s.id === id);
+  const service = services.find(s => isSameServiceId(s.id, id));
   const favorited = service ? isFavorite(service.id) : false;
 
   const [reviews, setReviews] = useState<Review[]>([]);
+  const scrollRef = useRef<ScrollView>(null);
+
+  const relatedServices = useMemo(() => {
+    if (!service) return [];
+    const candidates = services.filter(
+      s => s.categoryId === service.categoryId && !isSameServiceId(s.id, service.id)
+    );
+    const shuffled = [...candidates];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = shuffled[i];
+      shuffled[i] = shuffled[j];
+      shuffled[j] = tmp;
+    }
+    return shuffled.slice(0, 3);
+  }, [services, service?.id, service?.categoryId]);
 
   useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
     if (id) {
       tourismService.getReviewsForService(id).then(setReviews);
     }
@@ -71,9 +89,32 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
     }
   };
 
-  const relatedServices = services
-    .filter(s => s.categoryId === service.categoryId && s.id !== service.id)
-    .slice(0, 3);
+  // Xác định link Trang chủ chính thức (Cổng du lịch Lâm Đồng visitlamdong.vn hoặc website riêng)
+  const officialWebsiteUrl = useMemo(() => {
+    const raw = (service.website || '').trim();
+    if (raw && !raw.includes('maps.google.com') && !raw.includes('google.com/maps')) {
+      return raw;
+    }
+    const officialMap: Record<string, string> = {
+      SRV_06_THIEN_VIEN_TRUC_LAM: 'https://visitlamdong.vn/vi/thienvientruclam',
+      SRV_09_THAC_DATANLA: 'https://datanla.net',
+      SRV_11_LANGBIANG: 'https://visitlamdong.vn/vi/langbiang',
+      SRV_12_DOI_CHE_CAU_DAT: 'https://caudatfarm.com',
+      SRV_16_TUI_MO_TO: 'https://visitlamdong.vn',
+      SRV_19_LULULOLA_COFFEE: 'https://lululola.com',
+      SRV_20_MAY_LANG_THANG: 'https://maylangthang.com.vn',
+      SRV_41_DALAT_PALACE: 'https://dalatpalace.vn',
+      SRV_42_ANA_MANDARA: 'https://anamandara-resort.com',
+      SRV_43_TERRACOTTA_RESORT: 'https://terracottaresort.com',
+      SRV_44_SWISS_BELRESORT: 'https://www.swiss-belhotel.com',
+      SRV_45_MERCURE_DALAT: 'https://mercuredalatresort.com',
+      SRV_46_HOTEL_COLLINE: 'https://hotelcolline.com',
+    };
+    return officialMap[service.id] || 'https://visitlamdong.vn';
+  }, [service.id, service.website]);
+
+  // Link mở Google Maps dẫn đường chuẩn xác theo tọa độ GPS
+  const googleMapsGpsUrl = `https://www.google.com/maps/search/?api=1&query=${service.latitude},${service.longitude}`;
 
   const mainImage =
     service.images && service.images.length > 0
@@ -82,7 +123,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
         {/* Hero Image Section with Back & Favorite overlays */}
         <View style={styles.heroWrapper}>
           <Image source={{ uri: mainImage }} style={styles.heroImage} resizeMode="cover" />
@@ -158,6 +199,56 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
             </TouchableOpacity>
           </View>
 
+          {/* Official Website / Tourism Portal Button */}
+          <TouchableOpacity
+            style={[
+              styles.mapShortcut,
+              {
+                marginBottom: 10,
+                borderColor: '#C5D7F2',
+                backgroundColor: '#F0F5FF',
+              },
+            ]}
+            onPress={() => Linking.openURL(officialWebsiteUrl)}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.mapShortcutIcon}>🌐</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.mapShortcutTitle, { color: '#1E3A8A', fontWeight: '700' }]}>
+                Trang chủ chính thức
+              </Text>
+              <Text style={[styles.mapShortcutCoords, { color: '#2563EB' }]} numberOfLines={1}>
+                {officialWebsiteUrl.replace(/^https?:\/\//, '')} • Cổng thông tin & Website
+              </Text>
+            </View>
+            <Text style={[styles.mapShortcutArrow, { color: '#1E3A8A' }]}>↗</Text>
+          </TouchableOpacity>
+
+          {/* Direct Google Maps Navigation by GPS Coordinates */}
+          <TouchableOpacity
+            style={[
+              styles.mapShortcut,
+              {
+                marginBottom: 10,
+                borderColor: '#D1E7DD',
+                backgroundColor: '#F0F9F5',
+              },
+            ]}
+            onPress={() => Linking.openURL(googleMapsGpsUrl)}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.mapShortcutIcon}>📍</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.mapShortcutTitle, { color: '#0F5132', fontWeight: '700' }]}>
+                Mở Google Maps (Dẫn đường GPS)
+              </Text>
+              <Text style={[styles.mapShortcutCoords, { color: '#198754' }]} numberOfLines={1}>
+                GPS: {service.latitude}, {service.longitude} • {service.address}
+              </Text>
+            </View>
+            <Text style={[styles.mapShortcutArrow, { color: '#0F5132' }]}>↗</Text>
+          </TouchableOpacity>
+
           {/* Location Map Shortcut (Minh Anh) */}
           <TouchableOpacity
             style={styles.mapShortcut}
@@ -168,29 +259,11 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
             <View style={{ flex: 1 }}>
               <Text style={styles.mapShortcutTitle}>Xem vị trí trên bản đồ Đà Lạt</Text>
               <Text style={styles.mapShortcutCoords}>
-                Tọa độ: {service.latitude}, {service.longitude}
+                Tọa độ: {service.latitude}, {service.longitude} (Cách Chợ Đà Lạt {service.distanceKm} km)
               </Text>
             </View>
             <Text style={styles.mapShortcutArrow}>➔</Text>
           </TouchableOpacity>
-
-          {/* Direct Google Maps Navigation (Handbook link) */}
-          {service.website ? (
-            <TouchableOpacity
-              style={[styles.mapShortcut, { marginTop: 8, borderColor: '#D1E7DD', backgroundColor: '#F0F9F5' }]}
-              onPress={() => Linking.openURL(service.website!)}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.mapShortcutIcon}>📍</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.mapShortcutTitle, { color: '#0F5132', fontWeight: '700' }]}>Mở trên Google Maps</Text>
-                <Text style={[styles.mapShortcutCoords, { color: '#198754' }]} numberOfLines={1}>
-                  {service.name} • {service.address}
-                </Text>
-              </View>
-              <Text style={[styles.mapShortcutArrow, { color: '#0F5132' }]}>↗</Text>
-            </TouchableOpacity>
-          ) : null}
 
           {/* Description */}
           <Text style={styles.sectionHeading}>{t('aboutTab')}</Text>
@@ -216,10 +289,16 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
           {reviews.length > 0 ? (
             <View style={styles.reviewCardPreview}>
               <View style={styles.reviewAuthorRow}>
-                <Image
-                  source={{ uri: reviews[0].userAvatar }}
-                  style={styles.reviewAvatar}
-                />
+                {reviews[0].userAvatar && reviews[0].userId !== 'USR_ADMIN' ? (
+                  <Image
+                    source={{ uri: reviews[0].userAvatar }}
+                    style={styles.reviewAvatar}
+                  />
+                ) : (
+                  <View style={styles.reviewDefaultAvatar}>
+                    <Text style={{ fontSize: 15 }}>👤</Text>
+                  </View>
+                )}
                 <View style={{ flex: 1 }}>
                   <Text style={styles.reviewAuthorName}>{reviews[0].userName}</Text>
                   <RatingStars rating={reviews[0].rating} size={12} />
@@ -358,10 +437,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontFamily: typography.fontEditorial, // Times New Roman
+    fontSize: 22,
+    fontWeight: '700',
     color: colors.text,
     marginVertical: 4,
+    letterSpacing: 0.5,
   },
   ratingRow: {
     flexDirection: 'row',
@@ -543,6 +624,16 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
+  },
+  reviewDefaultAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.card,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   reviewAuthorName: {
     fontSize: 12,

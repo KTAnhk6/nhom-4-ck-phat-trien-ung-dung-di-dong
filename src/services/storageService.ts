@@ -20,6 +20,7 @@ import {
   INITIAL_SERVICES,
   INITIAL_USERS,
 } from '../data/dalatData';
+import { mysqlApiService } from './mysqlApiService';
 
 export const STORAGE_KEYS = {
   SERVICES: '@dalat_services_v3',
@@ -72,6 +73,18 @@ class StorageAdapter {
 
 const storage = new StorageAdapter();
 
+export const GUEST_USER: User = {
+  id: 'USR_GUEST',
+  username: '',
+  email: '',
+  fullName: 'Khách',
+  phone: '',
+  avatar: '',
+  role: 'guest',
+  status: 'active',
+  createdAt: '',
+};
+
 class DalatStorageService {
   async initialize(): Promise<void> {
     try {
@@ -93,10 +106,18 @@ class DalatStorageService {
         await storage.setItem(STORAGE_KEYS.USERS, JSON.stringify(INITIAL_USERS));
       }
 
-      // 4. Default logged in user (Admin for convenience during grading/demo, switchable to regular member)
+      // 4. Normalize stored Guest & Admin user if present (default avatar)
       const currentJson = await storage.getItem(STORAGE_KEYS.CURRENT_USER);
-      if (!currentJson) {
-        await storage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(INITIAL_USERS[0]));
+      if (currentJson) {
+        try {
+          const parsedCurrent = JSON.parse(currentJson);
+          if (parsedCurrent && parsedCurrent.role === 'guest') {
+            await storage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(GUEST_USER));
+          } else if (parsedCurrent && parsedCurrent.role === 'admin' && parsedCurrent.avatar) {
+            parsedCurrent.avatar = '';
+            await storage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(parsedCurrent));
+          }
+        } catch {}
       }
 
       // 5. Reviews
@@ -135,8 +156,14 @@ class DalatStorageService {
     }
   }
 
-  // SERVICES CRUD
+  // SERVICES CRUD (MySQL Database + AsyncStorage Cache)
   async getServices(): Promise<TourismService[]> {
+    const mysqlServices = await mysqlApiService.getServices();
+    if (mysqlServices && mysqlServices.length >= 1) {
+      await storage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(mysqlServices));
+      return mysqlServices;
+    }
+
     const json = await storage.getItem(STORAGE_KEYS.SERVICES);
     if (!json) return INITIAL_SERVICES;
     try {
@@ -150,40 +177,68 @@ class DalatStorageService {
 
   async saveServices(services: TourismService[]): Promise<void> {
     await storage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(services));
+    await mysqlApiService.saveServices(services);
   }
 
-  // CATEGORIES CRUD
+  // CATEGORIES CRUD (MySQL Database + AsyncStorage Cache)
   async getCategories(): Promise<ServiceCategory[]> {
+    const mysqlCategories = await mysqlApiService.getCategories();
+    if (mysqlCategories && mysqlCategories.length >= 1) {
+      await storage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(mysqlCategories));
+      return mysqlCategories;
+    }
+
     const json = await storage.getItem(STORAGE_KEYS.CATEGORIES);
     return json ? JSON.parse(json) : INITIAL_CATEGORIES;
   }
 
   async saveCategories(categories: ServiceCategory[]): Promise<void> {
     await storage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
+    await mysqlApiService.saveCategories(categories);
   }
 
-  // USERS CRUD
+  // USERS CRUD (MySQL Database + AsyncStorage Cache)
   async getUsers(): Promise<User[]> {
+    const normalizeUsers = (list: User[]): User[] =>
+      list.map(u => (u.role === 'admin' || u.id === 'USR_ADMIN' ? { ...u, avatar: '' } : u));
+
+    const mysqlUsers = await mysqlApiService.getUsers();
+    if (mysqlUsers && mysqlUsers.length >= 1) {
+      const normalized = normalizeUsers(mysqlUsers);
+      await storage.setItem(STORAGE_KEYS.USERS, JSON.stringify(normalized));
+      return normalized;
+    }
+
     const json = await storage.getItem(STORAGE_KEYS.USERS);
-    return json ? JSON.parse(json) : INITIAL_USERS;
+    return normalizeUsers(json ? JSON.parse(json) : INITIAL_USERS);
   }
 
   async saveUsers(users: User[]): Promise<void> {
     await storage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+    await mysqlApiService.saveUsers(users);
   }
 
-  // PASSWORDS (demo only: lưu theo username viết thường; tài khoản mẫu có mật khẩu mặc định)
+  // PASSWORDS (MySQL Database `user_passwords` table + AsyncStorage Cache)
   async getPasswords(): Promise<Record<string, string>> {
     const defaults: Record<string, string> = {};
     INITIAL_USERS.forEach(u => {
       defaults[u.username.toLowerCase()] = u.username === 'admin' ? 'admin123' : '123456';
     });
+
+    const mysqlPasswords = await mysqlApiService.getPasswords();
+    if (mysqlPasswords && Object.keys(mysqlPasswords).length > 0) {
+      const merged = { ...defaults, ...mysqlPasswords };
+      await storage.setItem(STORAGE_KEYS.PASSWORDS, JSON.stringify(merged));
+      return merged;
+    }
+
     const json = await storage.getItem(STORAGE_KEYS.PASSWORDS);
     return { ...defaults, ...(json ? JSON.parse(json) : {}) };
   }
 
   async savePasswords(passwords: Record<string, string>): Promise<void> {
     await storage.setItem(STORAGE_KEYS.PASSWORDS, JSON.stringify(passwords));
+    await mysqlApiService.savePasswords(passwords);
   }
 
   // CURRENT USER
@@ -200,44 +255,72 @@ class DalatStorageService {
     }
   }
 
-  // REVIEWS CRUD
+  // REVIEWS CRUD (MySQL Database + AsyncStorage Cache)
   async getReviews(): Promise<Review[]> {
+    const mysqlReviews = await mysqlApiService.getReviews();
+    if (mysqlReviews && Array.isArray(mysqlReviews)) {
+      await storage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(mysqlReviews));
+      return mysqlReviews;
+    }
+
     const json = await storage.getItem(STORAGE_KEYS.REVIEWS);
     return json ? JSON.parse(json) : INITIAL_REVIEWS;
   }
 
   async saveReviews(reviews: Review[]): Promise<void> {
     await storage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(reviews));
+    await mysqlApiService.saveReviews(reviews);
   }
 
-  // FAVORITES
+  // FAVORITES (MySQL Database + AsyncStorage Cache)
   async getFavorites(): Promise<string[]> {
+    const mysqlFavorites = await mysqlApiService.getFavorites();
+    if (mysqlFavorites && Array.isArray(mysqlFavorites)) {
+      await storage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(mysqlFavorites));
+      return mysqlFavorites;
+    }
+
     const json = await storage.getItem(STORAGE_KEYS.FAVORITES);
     return json ? JSON.parse(json) : [];
   }
 
   async saveFavorites(serviceIds: string[]): Promise<void> {
     await storage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(serviceIds));
+    await mysqlApiService.saveFavorites(serviceIds);
   }
 
-  // SEARCH HISTORY
+  // SEARCH HISTORY (MySQL Database + AsyncStorage Cache)
   async getSearchHistory(): Promise<SearchHistoryItem[]> {
+    const mysqlHistory = await mysqlApiService.getSearchHistory();
+    if (mysqlHistory && Array.isArray(mysqlHistory)) {
+      await storage.setItem(STORAGE_KEYS.SEARCH_HISTORY, JSON.stringify(mysqlHistory));
+      return mysqlHistory;
+    }
+
     const json = await storage.getItem(STORAGE_KEYS.SEARCH_HISTORY);
     return json ? JSON.parse(json) : [];
   }
 
   async saveSearchHistory(history: SearchHistoryItem[]): Promise<void> {
     await storage.setItem(STORAGE_KEYS.SEARCH_HISTORY, JSON.stringify(history));
+    await mysqlApiService.saveSearchHistory(history);
   }
 
-  // NOTIFICATIONS
+  // NOTIFICATIONS (MySQL Database + AsyncStorage Cache)
   async getNotifications(): Promise<NotificationItem[]> {
+    const mysqlNotifs = await mysqlApiService.getNotifications();
+    if (mysqlNotifs && Array.isArray(mysqlNotifs)) {
+      await storage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(mysqlNotifs));
+      return mysqlNotifs;
+    }
+
     const json = await storage.getItem(STORAGE_KEYS.NOTIFICATIONS);
     return json ? JSON.parse(json) : INITIAL_NOTIFICATIONS;
   }
 
   async saveNotifications(notifs: NotificationItem[]): Promise<void> {
     await storage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifs));
+    await mysqlApiService.saveNotifications(notifs);
   }
 
   // LANGUAGE
@@ -252,6 +335,7 @@ class DalatStorageService {
 
   // RESET
   async resetAll(): Promise<void> {
+    await mysqlApiService.resetDatabase();
     await storage.setItem(STORAGE_KEYS.SERVICES, JSON.stringify(INITIAL_SERVICES));
     await storage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(INITIAL_CATEGORIES));
     await storage.setItem(STORAGE_KEYS.USERS, JSON.stringify(INITIAL_USERS));

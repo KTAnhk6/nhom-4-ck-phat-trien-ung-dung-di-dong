@@ -1,12 +1,13 @@
 /**
- * Login Screen (Assigned to: Tuấn Anh - Auth & User)
- * Handles user login with validation, role support, and quick-fill demo buttons.
+ * Login Screen - Modern Editorial (Assigned to: Tuấn Anh - Auth & User)
+ * Giao diện đăng nhập chuẩn: Người dùng tự nhập tài khoản và mật khẩu.
+ * Hệ thống tự động phân quyền Admin hoặc User theo tài khoản đã nhập.
+ * Khách vãng lai không cần đăng nhập, chỉ cần bấm nút "Tiếp tục với tư cách Khách".
  */
 
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,43 +18,45 @@ import {
   View,
 } from 'react-native';
 import { colors } from '../../theme/colors';
-import { borderRadius, shadows, spacing } from '../../theme/spacing';
+import { spacing } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTourism } from '../../context/TourismContext';
 
 export const LoginScreen: React.FC = () => {
   const { t } = useLanguage();
-  const { login, isLoading } = useAuth();
+  const { login, loginAsGuest, isLoading } = useAuth();
   const { navigate } = useTourism();
 
-  const [username, setUsername] = useState('tuananh');
-  const [password, setPassword] = useState('123456');
+  // Ô nhập để trống hoàn toàn để người dùng tự gõ tài khoản & mật khẩu
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleLogin = async () => {
-    if (!username.trim() || !password) {
-      setErrorMsg('Vui lòng nhập tên đăng nhập và mật khẩu');
+    if (!username.trim()) {
+      setErrorMsg('Vui lòng nhập tên đăng nhập hoặc email');
       return;
     }
+    if (!password) {
+      setErrorMsg('Vui lòng nhập mật khẩu');
+      return;
+    }
+
     setErrorMsg('');
     const res = await login(username, password);
     if (res.success) {
       navigate('HOME');
     } else {
-      setErrorMsg(res.error || 'Đăng nhập thất bại');
+      setErrorMsg(res.error || 'Tên đăng nhập hoặc mật khẩu không chính xác');
     }
   };
 
-  const handleFillDemo = (type: 'user' | 'admin') => {
-    if (type === 'admin') {
-      setUsername('admin');
-      setPassword('admin123');
-    } else {
-      setUsername('tuananh');
-      setPassword('123456');
-    }
-    setErrorMsg('');
+  const handleGuestAccess = async () => {
+    // Khách không cần tài khoản, không cần mật khẩu
+    await loginAsGuest();
+    navigate('HOME');
   };
 
   return (
@@ -62,22 +65,24 @@ export const LoginScreen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Dalat Branding Hero */}
-        <View style={styles.brandHero}>
-          <View style={styles.logoCircle}>
-            <Text style={styles.logoIcon}>🌲</Text>
-          </View>
-          <Text style={styles.brandTitle}>{t('appName')}</Text>
-          <Text style={styles.brandSlogan}>{t('appSlogan')}</Text>
-          <View style={styles.memberTag}>
-            <Text style={styles.memberTagText}>Module: Tuấn Anh (Auth & Người dùng)</Text>
-          </View>
+        {/* Editorial Masthead */}
+        <View style={styles.masthead}>
+          <Text style={styles.issueNumber}>VOL. 2026 • ISSUE N° 04 • EDITORIAL EDITION</Text>
+          <Text style={styles.brandTitle}>ĐÀ LẠT WANDER</Text>
+          <Text style={styles.brandSubtitle}>
+            Ấn phẩm cẩm nang tra cứu dịch vụ du lịch Đà Lạt
+          </Text>
+          <View style={styles.hairlineDivider} />
         </View>
 
-        {/* Login Form Card */}
-        <View style={[styles.card, shadows.floating]}>
-          <Text style={styles.cardHeader}>{t('login')}</Text>
+        {/* Login Box */}
+        <View style={styles.loginCard}>
+          <Text style={styles.cardTitle}>ĐĂNG NHẬP</Text>
+          <Text style={styles.cardIntro}>
+            Vui lòng nhập tài khoản và mật khẩu của bạn để đăng nhập vào ứng dụng.
+          </Text>
 
+          {/* Error Message */}
           {errorMsg ? (
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>⚠️ {errorMsg}</Text>
@@ -85,75 +90,89 @@ export const LoginScreen: React.FC = () => {
           ) : null}
 
           {/* Username Input */}
-          <Text style={styles.inputLabel}>{t('username')} / Email</Text>
+          <Text style={styles.inputLabel}>TÊN ĐĂNG NHẬP HOẶC EMAIL</Text>
           <TextInput
             style={styles.input}
-            placeholder="Nhập username (vd: tuananh, admin)"
+            placeholder="Nhập username hoặc email của bạn"
             placeholderTextColor={colors.textLight}
             value={username}
-            onChangeText={setUsername}
+            onChangeText={text => {
+              setUsername(text);
+              if (errorMsg) setErrorMsg('');
+            }}
             autoCapitalize="none"
+            autoCorrect={false}
           />
 
           {/* Password Input */}
-          <Text style={styles.inputLabel}>{t('password')}</Text>
+          <View style={styles.passwordLabelRow}>
+            <Text style={styles.inputLabel}>MẬT KHẨU</Text>
+            <TouchableOpacity onPress={() => navigate('FORGOT_PASSWORD')}>
+              <Text style={styles.forgotText}>Quên mật khẩu?</Text>
+            </TouchableOpacity>
+          </View>
           <TextInput
             style={styles.input}
             placeholder="Nhập mật khẩu"
             placeholderTextColor={colors.textLight}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={text => {
+              setPassword(text);
+              if (errorMsg) setErrorMsg('');
+            }}
             secureTextEntry
           />
 
-          {/* Forgot Password Link */}
+          {/* Submit Button */}
           <TouchableOpacity
-            style={styles.forgotBtn}
-            onPress={() => navigate('FORGOT_PASSWORD')}
-          >
-            <Text style={styles.forgotText}>{t('forgotPassword')}</Text>
-          </TouchableOpacity>
-
-          {/* Login Action Button */}
-          <TouchableOpacity
-            style={styles.loginBtn}
+            style={styles.submitBtn}
             onPress={handleLogin}
             disabled={isLoading}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
             {isLoading ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.loginBtnText}>{t('login')}</Text>
+              <Text style={styles.submitBtnText}>ĐĂNG NHẬP →</Text>
             )}
           </TouchableOpacity>
 
-          {/* Demo fast-fill buttons for teacher / grading */}
-          <View style={styles.demoBox}>
-            <Text style={styles.demoTitle}>Tài khoản mẫu để test nhanh:</Text>
-            <View style={styles.demoRow}>
-              <TouchableOpacity
-                style={styles.demoBtn}
-                onPress={() => handleFillDemo('user')}
-              >
-                <Text style={styles.demoBtnText}>👤 Member (tuananh)</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.demoBtn, styles.demoBtnAdmin]}
-                onPress={() => handleFillDemo('admin')}
-              >
-                <Text style={styles.demoBtnTextAdmin}>⚙️ Admin (admin)</Text>
-              </TouchableOpacity>
-            </View>
+          {/* Divider */}
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>HOẶC</Text>
+            <View style={styles.dividerLine} />
           </View>
+
+          {/* Guest Direct Access (Khách không cần đăng nhập) */}
+          <TouchableOpacity
+            style={styles.guestBtn}
+            onPress={handleGuestAccess}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.guestBtnTitle}>✦ Tiếp tục với tư cách Khách</Text>
+            <Text style={styles.guestBtnSubtitle}>
+              Khám phá không cần đăng nhập (Giới hạn tính năng đánh giá & lưu yêu thích)
+            </Text>
+          </TouchableOpacity>
 
           {/* Register Prompt */}
           <View style={styles.registerPrompt}>
-            <Text style={styles.promptText}>{t('noAccount')} </Text>
+            <Text style={styles.promptText}>Chưa có tài khoản? </Text>
             <TouchableOpacity onPress={() => navigate('REGISTER')}>
-              <Text style={styles.registerLink}>{t('registerNow')}</Text>
+              <Text style={styles.registerLink}>Đăng ký ngay</Text>
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Note pointing to ACCOUNTS_CREDENTIALS.md for testers */}
+        <View style={styles.credentialHintBox}>
+          <Text style={styles.credentialHintText}>
+            💡 Thông tin tài khoản & mật khẩu kiểm thử được lưu trong file{' '}
+            <Text style={{ fontWeight: '700' }}>ACCOUNTS_CREDENTIALS.md</Text>
+            {'\n'}• Admin: <Text style={{ fontFamily: typography.fontMono }}>admin / admin123</Text>
+            {'\n'}• User: <Text style={{ fontFamily: typography.fontMono }}>tuananh / 123456</Text>
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -166,154 +185,167 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.xxl,
     justifyContent: 'center',
     minHeight: '100%',
   },
-  brandHero: {
+  masthead: {
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  logoCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: colors.primaryMuted,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
-  logoIcon: {
-    fontSize: 32,
+  issueNumber: {
+    fontFamily: typography.fontMono,
+    fontSize: 9,
+    letterSpacing: 1.5,
+    color: colors.textMuted,
+    marginBottom: 4,
+    textTransform: 'uppercase',
   },
   brandTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: -0.5,
+    fontFamily: typography.fontEditorial, // Times New Roman
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.text,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
   },
-  brandSlogan: {
-    fontSize: 13,
+  brandSubtitle: {
+    fontFamily: typography.fontEditorial,
+    fontSize: 12,
+    fontStyle: 'italic',
     color: colors.textMuted,
-    marginTop: 2,
+    marginTop: 4,
+    textAlign: 'center',
   },
-  memberTag: {
-    marginTop: spacing.sm,
-    backgroundColor: colors.cardMuted,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
+  hairlineDivider: {
+    width: 60,
+    height: 1,
+    backgroundColor: colors.border,
+    marginTop: spacing.md,
+  },
+  loginCard: {
+    backgroundColor: colors.card,
+    borderRadius: 2,
+    padding: spacing.xl,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  memberTagText: {
-    fontSize: 10,
-    color: colors.primaryLight,
-    fontWeight: '700',
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.xl,
-    padding: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  cardHeader: {
-    fontSize: 20,
+  cardTitle: {
+    fontFamily: typography.fontEditorial,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  cardIntro: {
+    fontFamily: typography.fontSans,
+    fontSize: 12,
+    color: colors.textMuted,
     marginBottom: spacing.md,
+    lineHeight: 17,
   },
   errorBox: {
     backgroundColor: colors.dangerLight,
     padding: spacing.sm,
-    borderRadius: borderRadius.sm,
+    borderRadius: 2,
     marginBottom: spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.danger,
   },
   errorText: {
+    fontFamily: typography.fontSans,
     color: colors.danger,
     fontSize: 12,
     fontWeight: '600',
   },
   inputLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontFamily: typography.fontMono,
+    fontSize: 10,
+    fontWeight: '700',
     color: colors.text,
-    marginBottom: 6,
-    marginTop: spacing.xs,
+    letterSpacing: 0.8,
+    marginBottom: 5,
+  },
+  passwordLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  forgotText: {
+    fontFamily: typography.fontSans,
+    fontSize: 11,
+    color: colors.secondary,
+    fontWeight: '600',
   },
   input: {
-    height: 46,
+    height: 44,
     backgroundColor: colors.background,
-    borderRadius: borderRadius.md,
+    borderRadius: 2,
     paddingHorizontal: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.text,
     marginBottom: spacing.sm,
+    fontFamily: typography.fontSans,
   },
-  forgotBtn: {
-    alignSelf: 'flex-end',
-    marginBottom: spacing.lg,
-  },
-  forgotText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.secondary,
-  },
-  loginBtn: {
-    height: 48,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.primary,
+  submitBtn: {
+    height: 46,
+    borderRadius: 2,
+    backgroundColor: colors.text, // Solid Obsidian Noir
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: spacing.md,
   },
-  loginBtnText: {
+  submitBtnText: {
+    fontFamily: typography.fontSans,
     color: '#FFF',
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: '700',
+    letterSpacing: 0.8,
   },
-  demoBox: {
-    marginTop: spacing.lg,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
-  },
-  demoTitle: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.textMuted,
-    marginBottom: spacing.xs,
-  },
-  demoRow: {
+  dividerRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.md,
     gap: 8,
   },
-  demoBtn: {
+  dividerLine: {
     flex: 1,
-    paddingVertical: 7,
-    borderRadius: borderRadius.sm,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    fontFamily: typography.fontMono,
+    fontSize: 9,
+    color: colors.textLight,
+    letterSpacing: 1,
+  },
+  guestBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: spacing.md,
     backgroundColor: colors.cardMuted,
-    alignItems: 'center',
+    borderRadius: 2,
     borderWidth: 1,
     borderColor: colors.border,
+    alignItems: 'center',
   },
-  demoBtnText: {
-    fontSize: 11,
-    fontWeight: '600',
+  guestBtnTitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 12,
+    fontWeight: '700',
     color: colors.text,
   },
-  demoBtnAdmin: {
-    backgroundColor: colors.secondaryMuted,
-    borderColor: colors.secondary,
-  },
-  demoBtnTextAdmin: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.secondary,
+  guestBtnSubtitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2,
+    textAlign: 'center',
   },
   registerPrompt: {
     flexDirection: 'row',
@@ -321,12 +353,28 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   promptText: {
-    fontSize: 13,
+    fontFamily: typography.fontSans,
+    fontSize: 12,
     color: colors.textMuted,
   },
   registerLink: {
-    fontSize: 13,
+    fontFamily: typography.fontSans,
+    fontSize: 12,
     fontWeight: '700',
     color: colors.primary,
+    textDecorationLine: 'underline',
+  },
+  credentialHintBox: {
+    marginTop: spacing.md,
+    padding: spacing.sm,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+  },
+  credentialHintText: {
+    fontFamily: typography.fontSans,
+    fontSize: 10,
+    color: colors.textLight,
+    lineHeight: 15,
+    textAlign: 'center',
   },
 });

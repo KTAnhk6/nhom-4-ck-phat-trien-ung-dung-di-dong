@@ -41,6 +41,14 @@ export const FilterSortModal: React.FC<FilterSortModalProps> = ({ visible, onClo
 
   const ratingOptions = [0, 4.5, 4.0, 3.5];
 
+  const priceRanges = [
+    { label: 'Tất cả mức giá', min: 0, max: 0 },
+    { label: 'Miễn phí', min: 0, max: 1 },
+    { label: 'Bình dân (< 100k)', min: 1, max: 100000 },
+    { label: 'Trung cấp (100k - 500k)', min: 100000, max: 500000 },
+    { label: 'Cao cấp (> 500k)', min: 500000, max: 50000000 },
+  ];
+
   const districtOptions = [
     'ALL',
     'Phường 1',
@@ -143,7 +151,28 @@ export const FilterSortModal: React.FC<FilterSortModalProps> = ({ visible, onClo
               })}
             </View>
 
-            {/* 3. Rating Filter */}
+            {/* 3. Price Range Filter */}
+            <Text style={styles.sectionTitle}>{t('priceRangeLabel')}</Text>
+            <View style={styles.chipGrid}>
+              {priceRanges.map(pr => {
+                const active = tempFilter.minPrice === pr.min && tempFilter.maxPrice === pr.max;
+                return (
+                  <TouchableOpacity
+                    key={pr.label}
+                    style={[styles.filterChip, active && styles.filterChipActive]}
+                    onPress={() =>
+                      setTempFilter(p => ({ ...p, minPrice: pr.min, maxPrice: pr.max }))
+                    }
+                  >
+                    <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
+                      {pr.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* 4. Rating Filter */}
             <Text style={styles.sectionTitle}>{t('minRatingFilter')}</Text>
             <View style={styles.chipGrid}>
               {ratingOptions.map(r => {

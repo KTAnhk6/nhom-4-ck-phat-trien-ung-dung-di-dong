@@ -1,12 +1,13 @@
 /**
- * App Header Component
- * Displays logo, title, back navigation, language toggle, and notifications badge.
+ * App Header Component - Modern Editorial
+ * Displays magazine masthead, screen titles with Times New Roman, and role status badge.
  */
 
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
+import { typography } from '../theme/typography';
 import { useLanguage } from '../context/LanguageContext';
 import { useTourism } from '../context/TourismContext';
 import { useAuth } from '../context/AuthContext';
@@ -26,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { language, toggleLanguage, t } = useLanguage();
   const { goBack, unreadNotificationCount, navigate } = useTourism();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isGuest } = useAuth();
 
   const handleBack = onBack || goBack;
 
@@ -54,11 +55,18 @@ export const Header: React.FC<HeaderProps> = ({
           {!title && (
             <View style={styles.subtitleRow}>
               <Text style={styles.subtitleText}>{t('dalatScope')}</Text>
-              {isAdmin && (
+              {isAdmin ? (
                 <View style={styles.adminBadge}>
                   <Text style={styles.adminBadgeText}>ADMIN</Text>
                 </View>
-              )}
+              ) : isGuest ? (
+                <TouchableOpacity
+                  style={styles.guestBadge}
+                  onPress={() => navigate('LOGIN')}
+                >
+                  <Text style={styles.guestBadgeText}>KHÁCH</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           )}
         </View>
@@ -106,14 +114,14 @@ export const Header: React.FC<HeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: 56,
+    height: 58,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
     backgroundColor: colors.card,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+    borderBottomColor: colors.border,
   },
   leftRow: {
     flexDirection: 'row',
@@ -121,38 +129,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   backButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.cardMuted,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   backIcon: {
-    fontSize: 20,
-    color: colors.primary,
+    fontSize: 18,
+    color: colors.text,
     fontWeight: '700',
   },
   logoBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.primaryMuted,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   logoPine: {
-    fontSize: 18,
+    fontSize: 16,
   },
   titleContainer: {
     flex: 1,
   },
   titleText: {
-    fontSize: 17,
+    fontFamily: typography.fontEditorial, // Times New Roman
+    fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    letterSpacing: 0.5,
   },
   subtitleRow: {
     flexDirection: 'row',
@@ -160,20 +174,37 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   subtitleText: {
-    fontSize: 11,
-    color: colors.primaryLight,
-    fontWeight: '600',
+    fontFamily: typography.fontMono,
+    fontSize: 10,
+    color: colors.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   adminBadge: {
     backgroundColor: colors.secondary,
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 3,
   },
   adminBadgeText: {
+    fontFamily: typography.fontSans,
     color: '#FFF',
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  guestBadge: {
+    backgroundColor: colors.warning,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 3,
+  },
+  guestBadgeText: {
+    fontFamily: typography.fontSans,
+    color: '#FFF',
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 0.4,
   },
   rightRow: {
     flexDirection: 'row',
@@ -183,27 +214,30 @@ const styles = StyleSheet.create({
   langButton: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 3,
     backgroundColor: colors.cardMuted,
     borderWidth: 1,
     borderColor: colors.border,
   },
   langText: {
+    fontFamily: typography.fontSans,
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '600',
     color: colors.text,
   },
   iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.cardMuted,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   bellIcon: {
-    fontSize: 16,
+    fontSize: 15,
   },
   badge: {
     position: 'absolute',
@@ -218,6 +252,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
   },
   badgeText: {
+    fontFamily: typography.fontSans,
     color: '#FFF',
     fontSize: 9,
     fontWeight: '800',

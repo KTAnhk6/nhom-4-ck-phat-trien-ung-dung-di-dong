@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { createMysqlVitePlugin } from './src/server/mysqlVitePlugin';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), createMysqlVitePlugin(__dirname)],
   resolve: {
     alias: {
       'react-native/Libraries/Utilities/codegenNativeComponent': path.resolve(__dirname, 'src/mockCodegen.ts'),

@@ -21,11 +21,13 @@ import { ADMOB_CONFIG } from '../config/apiConfig';
 import { colors } from '../theme/colors';
 import { borderRadius, shadows, spacing } from '../theme/spacing';
 import { useTourism } from '../context/TourismContext';
+import { useAuth } from '../context/AuthContext';
 
 export const InterstitialAd: React.FC = () => {
   const { isInterstitialVisible, closeInterstitial } = useTourism();
+  const { isAdmin } = useAuth();
 
-  if (!ADMOB_CONFIG.IS_ENABLED || !isInterstitialVisible) {
+  if (!ADMOB_CONFIG.IS_ENABLED || !isInterstitialVisible || isAdmin) {
     return null;
   }
 

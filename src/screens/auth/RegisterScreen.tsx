@@ -1,6 +1,7 @@
 /**
- * Register Screen (Assigned to: Tuấn Anh - Auth & User)
- * Allows new users to create accounts for Dalat tourism service lookups.
+ * Register Screen - Modern Editorial Edition (Assigned to: Tuấn Anh - Auth & User)
+ * Đăng ký tài khoản người dùng bình thường như các ứng dụng tiêu chuẩn khác.
+ * Không có tùy chọn đăng ký quản trị viên.
  */
 
 import React, { useState } from 'react';
@@ -17,7 +18,8 @@ import {
   View,
 } from 'react-native';
 import { colors } from '../../theme/colors';
-import { borderRadius, shadows, spacing } from '../../theme/spacing';
+import { spacing } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTourism } from '../../context/TourismContext';
@@ -37,7 +39,7 @@ export const RegisterScreen: React.FC = () => {
 
   const handleRegister = async () => {
     if (!fullName.trim() || !username.trim() || !email.trim() || !password) {
-      setErrorMsg('Vui lòng điền đầy đủ các trường bắt buộc');
+      setErrorMsg('Vui lòng điền đầy đủ các thông tin bắt buộc (*)');
       return;
     }
     if (password !== confirmPassword) {
@@ -45,27 +47,34 @@ export const RegisterScreen: React.FC = () => {
       return;
     }
     if (password.length < 4) {
-      setErrorMsg('Mật khẩu tối thiểu phải từ 4 ký tự');
+      setErrorMsg('Mật khẩu phải có ít nhất 4 ký tự');
       return;
     }
 
     setErrorMsg('');
+    // Đăng ký tài khoản người dùng bình thường
     const res = await register({
       fullName,
       username,
       email,
       phone,
       passwordPlain: password,
+      role: 'user',
     });
 
     if (res.success) {
       Alert.alert(
-        'Đăng ký thành công',
-        'Tài khoản đã được tạo! Bạn có thể đăng nhập ngay.',
-        [{ text: 'Đăng nhập', onPress: () => navigate('LOGIN') }]
+        'Đăng ký thành công! 🎉',
+        `Tài khoản [${username}] đã được tạo thành công! Bạn có thể đăng nhập ngay để trải nghiệm ứng dụng.`,
+        [
+          {
+            text: 'Đăng nhập ngay',
+            onPress: () => navigate('LOGIN'),
+          },
+        ]
       );
     } else {
-      setErrorMsg(res.error || 'Đăng ký thất bại');
+      setErrorMsg(res.error || 'Đăng ký không thành công');
     }
   };
 
@@ -75,98 +84,129 @@ export const RegisterScreen: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={goBack}>
+        {/* Navigation Top Row */}
+        <View style={styles.topRow}>
+          <TouchableOpacity style={styles.backBtn} onPress={goBack} activeOpacity={0.7}>
             <Text style={styles.backIcon}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('register')}</Text>
-          <View style={{ width: 38 }} />
+          <Text style={styles.topVol}>ISSUE N° 04 • EDITORIAL REGISTRATION</Text>
+          <View style={{ width: 34 }} />
         </View>
 
-        <View style={[styles.card, shadows.floating]}>
+        {/* Editorial Heading */}
+        <View style={styles.headingSection}>
+          <Text style={styles.brandTitle}>ĐĂNG KÝ TÀI KHOẢN</Text>
+          <Text style={styles.brandSubtitle}>
+            Tạo tài khoản thành viên để lưu địa điểm yêu thích và gửi đánh giá du lịch
+          </Text>
+        </View>
+
+        <View style={styles.card}>
           {errorMsg ? (
             <View style={styles.errorBox}>
               <Text style={styles.errorText}>⚠️ {errorMsg}</Text>
             </View>
           ) : null}
 
-          <Text style={styles.inputLabel}>{t('fullName')} *</Text>
+          {/* Form Fields */}
+          <Text style={styles.inputLabel}>HỌ VÀ TÊN *</Text>
           <TextInput
             style={styles.input}
             placeholder="Ví dụ: Nguyễn Văn Du Khách"
             placeholderTextColor={colors.textLight}
             value={fullName}
-            onChangeText={setFullName}
+            onChangeText={text => {
+              setFullName(text);
+              if (errorMsg) setErrorMsg('');
+            }}
           />
 
-          <Text style={styles.inputLabel}>{t('username')} *</Text>
+          <Text style={styles.inputLabel}>TÊN ĐĂNG NHẬP (USERNAME) *</Text>
           <TextInput
             style={styles.input}
-            placeholder="Tên đăng nhập viết liền không dấu"
+            placeholder="Tên viết liền không dấu (ví dụ: hoangnam, minhduc...)"
             placeholderTextColor={colors.textLight}
             value={username}
-            onChangeText={setUsername}
+            onChangeText={text => {
+              setUsername(text);
+              if (errorMsg) setErrorMsg('');
+            }}
             autoCapitalize="none"
+            autoCorrect={false}
           />
 
-          <Text style={styles.inputLabel}>{t('email')} *</Text>
+          <Text style={styles.inputLabel}>ĐỊA CHỈ EMAIL *</Text>
           <TextInput
             style={styles.input}
             placeholder="email@example.com"
             placeholderTextColor={colors.textLight}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={text => {
+              setEmail(text);
+              if (errorMsg) setErrorMsg('');
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
           />
 
-          <Text style={styles.inputLabel}>{t('phone')}</Text>
+          <Text style={styles.inputLabel}>SỐ ĐIỆN THOẠI</Text>
           <TextInput
             style={styles.input}
-            placeholder="0912345678"
+            placeholder="0912.345.678"
             placeholderTextColor={colors.textLight}
             value={phone}
-            onChangeText={setPhone}
+            onChangeText={text => {
+              setPhone(text);
+              if (errorMsg) setErrorMsg('');
+            }}
             keyboardType="phone-pad"
           />
 
-          <Text style={styles.inputLabel}>{t('password')} *</Text>
+          <Text style={styles.inputLabel}>MẬT KHẨU *</Text>
           <TextInput
             style={styles.input}
             placeholder="Mật khẩu tối thiểu 4 ký tự"
             placeholderTextColor={colors.textLight}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={text => {
+              setPassword(text);
+              if (errorMsg) setErrorMsg('');
+            }}
             secureTextEntry
           />
 
-          <Text style={styles.inputLabel}>{t('confirmPassword')} *</Text>
+          <Text style={styles.inputLabel}>XÁC NHẬN MẬT KHẨU *</Text>
           <TextInput
             style={styles.input}
-            placeholder="Nhập lại mật khẩu"
+            placeholder="Nhập lại mật khẩu vừa đặt"
             placeholderTextColor={colors.textLight}
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={text => {
+              setConfirmPassword(text);
+              if (errorMsg) setErrorMsg('');
+            }}
             secureTextEntry
           />
 
+          {/* Submit Button */}
           <TouchableOpacity
             style={styles.registerBtn}
             onPress={handleRegister}
             disabled={isLoading}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
             {isLoading ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.registerBtnText}>{t('register')}</Text>
+              <Text style={styles.registerBtnText}>TẠO TÀI KHOẢN →</Text>
             )}
           </TouchableOpacity>
 
+          {/* Login Link */}
           <View style={styles.loginPrompt}>
-            <Text style={styles.promptText}>{t('haveAccount')} </Text>
+            <Text style={styles.promptText}>Đã có tài khoản? </Text>
             <TouchableOpacity onPress={() => navigate('LOGIN')}>
-              <Text style={styles.loginLink}>{t('loginNow')}</Text>
+              <Text style={styles.loginLink}>Đăng nhập ngay</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -181,82 +221,113 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
-    padding: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl,
   },
-  headerRow: {
+  topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: colors.border,
   },
   backIcon: {
-    fontSize: 20,
-    color: colors.primary,
+    fontSize: 18,
+    color: colors.text,
     fontWeight: '700',
   },
-  headerTitle: {
-    fontSize: 20,
+  topVol: {
+    fontFamily: typography.fontMono,
+    fontSize: 9,
+    letterSpacing: 1.2,
+    color: colors.textMuted,
+  },
+  headingSection: {
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  brandTitle: {
+    fontFamily: typography.fontEditorial, // Times New Roman
+    fontSize: 24,
     fontWeight: '700',
     color: colors.text,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  brandSubtitle: {
+    fontFamily: typography.fontEditorial,
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: colors.textMuted,
+    marginTop: 4,
+    textAlign: 'center',
   },
   card: {
     backgroundColor: colors.card,
-    borderRadius: borderRadius.xl,
+    borderRadius: 2,
     padding: spacing.xl,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: colors.border,
   },
   errorBox: {
     backgroundColor: colors.dangerLight,
     padding: spacing.sm,
-    borderRadius: borderRadius.sm,
+    borderRadius: 2,
     marginBottom: spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.danger,
   },
   errorText: {
+    fontFamily: typography.fontSans,
     color: colors.danger,
     fontSize: 12,
     fontWeight: '600',
   },
   inputLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontFamily: typography.fontMono,
+    fontSize: 10,
+    fontWeight: '700',
     color: colors.text,
+    letterSpacing: 0.8,
     marginBottom: 5,
-    marginTop: 6,
+    marginTop: spacing.xs,
   },
   input: {
     height: 44,
     backgroundColor: colors.background,
-    borderRadius: borderRadius.md,
+    borderRadius: 2,
     paddingHorizontal: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.text,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
+    fontFamily: typography.fontSans,
   },
   registerBtn: {
-    height: 48,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.primary,
+    height: 46,
+    borderRadius: 2,
+    backgroundColor: colors.text, // Solid Obsidian Noir
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
   },
   registerBtnText: {
+    fontFamily: typography.fontSans,
     color: '#FFF',
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: '700',
+    letterSpacing: 0.8,
   },
   loginPrompt: {
     flexDirection: 'row',
@@ -264,12 +335,15 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   promptText: {
-    fontSize: 13,
+    fontFamily: typography.fontSans,
+    fontSize: 12,
     color: colors.textMuted,
   },
   loginLink: {
-    fontSize: 13,
+    fontFamily: typography.fontSans,
+    fontSize: 12,
     fontWeight: '700',
     color: colors.primary,
+    textDecorationLine: 'underline',
   },
 });

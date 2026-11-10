@@ -4,6 +4,7 @@
  */
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import mobileAds, {
   AdEventType,
@@ -20,8 +21,9 @@ import {
   ServiceCategory,
   TourismService,
 } from '../types';
-import { tourismService } from '../services/tourismService';
+import { isSameServiceId, tourismService } from '../services/tourismService';
 import { ADMOB_CONFIG } from '../config/apiConfig';
+import { useAuth } from './AuthContext';
 
 export const DEFAULT_FILTER: FilterOptions = {
   categoryId: 'ALL',
@@ -87,6 +89,7 @@ interface TourismContextType {
 const TourismContext = createContext<TourismContextType | undefined>(undefined);
 
 export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { currentUser, isGuest, isAdmin, logout } = useAuth();
   const [services, setServices] = useState<TourismService[]>([]);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -140,7 +143,7 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const closedAt = Date.now();
     lastInterstitialShownRef.current = closedAt;
     setLastInterstitialTime(closedAt);
-    AsyncStorage.setItem(LAST_SHOWN_KEY, String(closedAt)).catch(() => {});
+    AsyncStorage.setItem(LAST_SHOWN_KEY, String(closedAt)).catch(() => { });
 
     pending();
   }, []);
@@ -160,7 +163,7 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const shownAt = Date.now();
       lastInterstitialShownRef.current = shownAt;
       setLastInterstitialTime(shownAt);
-      AsyncStorage.setItem(LAST_SHOWN_KEY, String(shownAt)).catch(() => {});
+      AsyncStorage.setItem(LAST_SHOWN_KEY, String(shownAt)).catch(() => { });
     });
 
     const unsubscribeClosed = interstitial.addAdEventListener(AdEventType.CLOSED, () => {
@@ -191,13 +194,13 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
             lastInterstitialShownRef.current = savedTimestamp;
             setLastInterstitialTime(savedTimestamp);
           }
-        } catch (e) {}
+        } catch (e) { }
         if (!active) return;
         adsInitializedRef.current = true;
         setAdsInitialized(true);
         interstitial.load();
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => {
       active = false;
@@ -219,7 +222,7 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const resetInterstitialCooldown = () => {
     lastInterstitialShownRef.current = 0;
     setLastInterstitialTime(0);
-    AsyncStorage.removeItem(LAST_SHOWN_KEY).catch(() => {});
+    AsyncStorage.removeItem(LAST_SHOWN_KEY).catch(() => { });
   };
 
   const closeInterstitial = () => {
@@ -243,6 +246,18 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Hàm kiểm tra và kích hoạt Interstitial Ads khi ấn nút chuyển trang (Chu kỳ: tắt tạm thời trong 3 phút sau khi xem quảng cáo)
   const executeWithInterstitialCheck = (targetScreen: ScreenName, executeAction: () => void) => {
+    // Tài khoản Admin không bao giờ phải xem quảng cáo
+    if (isAdmin || currentUser?.role === 'admin') {
+      executeAction();
+      return;
+    }
+
+    // Không bao giờ chặn hoặc hiện quảng cáo khi chuyển sang các trang đăng nhập/đăng ký
+    if (targetScreen === 'LOGIN' || targetScreen === 'REGISTER' || targetScreen === 'FORGOT_PASSWORD') {
+      executeAction();
+      return;
+    }
+
     // Nếu chuyển sang chính trang hiện tại
     if (currentScreen.name === targetScreen) {
       executeAction();
@@ -279,7 +294,7 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const shownAt = Date.now();
     lastInterstitialShownRef.current = shownAt;
     setLastInterstitialTime(shownAt);
-    AsyncStorage.setItem(LAST_SHOWN_KEY, String(shownAt)).catch(() => {});
+    AsyncStorage.setItem(LAST_SHOWN_KEY, String(shownAt)).catch(() => { });
 
     // 2. Kích hoạt AdMob SDK show nếu có
     interstitial.show().catch((adError: any) => {
@@ -322,6 +337,32 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Navigation methods
   const navigate = (screen: ScreenName, params?: Partial<ScreenState>) => {
+    // Chặn người dùng thường và khách truy cập trang Admin
+    if (screen.startsWith('ADMIN_') && currentUser?.role !== 'admin') {
+      Alert.alert(
+        'Không có quyền truy cập',
+        'Khu vực này dành riêng cho Quản trị viên (Admin). Vui lòng đăng nhập với tài khoản Admin để truy cập.'
+      );
+      return;
+    }
+
+    // Chặn khách truy cập danh sách Yêu thích
+    if (screen === 'FAVORITES' && (!currentUser || isGuest || currentUser.role === 'guest')) {
+      Alert.alert(
+        'Chế độ Khách (Giới hạn tính năng)',
+        'Chức năng Lưu địa điểm yêu thích chỉ dành cho Thành viên. Vui lòng đăng nhập hoặc đăng ký tài khoản!',
+        [
+          { text: 'Để sau', style: 'cancel' },
+          { text: 'Đăng nhập ngay', onPress: () => navigate('LOGIN') },
+        ]
+      );
+      return;
+    }
+
+    if (screen === 'LOGIN' && isGuest) {
+      logout();
+    }
+
     executeWithInterstitialCheck(screen, () => {
       const nextState: ScreenState = { name: screen, ...params };
       setNavigationStack(prev => [...prev, nextState]);
@@ -371,18 +412,47 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Actions
   const toggleFavorite = async (serviceId: string) => {
+    // Chặn tài khoản khách lưu yêu thích
+    if (isGuest || currentUser?.role === 'guest') {
+      Alert.alert(
+        'Chế độ Khách (Giới hạn tính năng)',
+        'Bạn đang duyệt với tư cách Khách. Vui lòng đăng nhập hoặc tạo tài khoản để lưu các địa điểm vào danh sách yêu thích!',
+        [
+          { text: 'Để sau', style: 'cancel' },
+          { text: 'Đăng nhập ngay', onPress: () => navigate('LOGIN') },
+        ]
+      );
+      return false;
+    }
     const isNowFav = await tourismService.toggleFavorite(serviceId);
     setFavorites(prev =>
-      isNowFav ? [...prev, serviceId] : prev.filter(id => id !== serviceId)
+      isNowFav
+        ? [...prev, serviceId]
+        : prev.filter(id => !isSameServiceId(id, serviceId))
     );
     return isNowFav;
   };
 
   const isFavorite = (serviceId: string) => {
-    return favorites.includes(serviceId);
+    if (!currentUser || isGuest || currentUser.role === 'guest') {
+      return false;
+    }
+    return favorites.some(favId => isSameServiceId(favId, serviceId));
   };
 
   const addReview = async (data: Omit<Review, 'id' | 'createdAt' | 'status'>) => {
+    // Chặn tài khoản khách viết đánh giá
+    if (isGuest || currentUser?.role === 'guest') {
+      Alert.alert(
+        'Chế độ Khách (Giới hạn tính năng)',
+        'Bạn đang duyệt ở chế độ Khách. Vui lòng đăng nhập hoặc tạo tài khoản để gửi nhận xét và chấm điểm sao!',
+        [
+          { text: 'Đóng', style: 'cancel' },
+          { text: 'Đăng nhập ngay', onPress: () => navigate('LOGIN') },
+        ]
+      );
+      throw new Error('Guest cannot add review');
+    }
     const newRev = await tourismService.addReview(data);
     await refreshData();
     return newRev;
@@ -457,7 +527,7 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
       value={{
         services,
         categories,
-        favorites,
+        favorites: !currentUser || isGuest || currentUser.role === 'guest' ? [] : favorites,
         searchHistory,
         notifications,
         unreadNotificationCount,

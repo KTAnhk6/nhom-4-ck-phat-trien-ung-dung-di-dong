@@ -18,10 +18,12 @@ import {
 } from 'react-native';
 import { colors } from '../../theme/colors';
 import { borderRadius, shadows, spacing } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTourism } from '../../context/TourismContext';
 import { ChatMessage } from '../../types';
 import { chatbotService } from '../../services/chatbotService';
+import { DragScrollView } from '../../components/DragScrollView';
 
 export const DalatChatbotScreen: React.FC = () => {
   const { t } = useLanguage();
@@ -174,22 +176,22 @@ export const DalatChatbotScreen: React.FC = () => {
 
       {/* Quick Prompts Carousel */}
       <View style={styles.quickPromptsBar}>
-        <FlatList
+        <DragScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={quickPrompts}
-          keyExtractor={(item, index) => `${index}`}
           contentContainerStyle={{ paddingHorizontal: spacing.md, gap: 8 }}
-          renderItem={({ item }) => (
+        >
+          {quickPrompts.map((item, index) => (
             <TouchableOpacity
+              key={index}
               style={styles.quickPromptChip}
               onPress={() => handleSend(item)}
               activeOpacity={0.7}
             >
               <Text style={styles.quickPromptText}>💬 {item}</Text>
             </TouchableOpacity>
-          )}
-        />
+          ))}
+        </DragScrollView>
       </View>
 
       {/* Messages Stream */}
@@ -261,13 +263,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   headerTitle: {
-    fontSize: 14,
+    fontFamily: typography.primary,
+    fontSize: 16,
     fontWeight: '700',
-    color: colors.text,
+    color: '#141414',
+    letterSpacing: 0.2,
   },
   headerSubtitle: {
-    fontSize: 10,
-    color: colors.textMuted,
+    fontFamily: typography.sansBody,
+    fontSize: 10.5,
+    color: '#8A8A86',
   },
   quickPromptsBar: {
     paddingVertical: 8,
@@ -367,23 +372,28 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   recName: {
-    fontSize: 13,
+    fontFamily: typography.primary,
+    fontSize: 14.5,
     fontWeight: '700',
-    color: colors.text,
+    color: '#141414',
+    letterSpacing: 0.15,
   },
   recDist: {
-    fontSize: 10,
-    color: colors.textMuted,
+    fontFamily: typography.sansBody,
+    fontSize: 10.5,
+    color: '#686864',
   },
   recPrice: {
-    fontSize: 11,
+    fontFamily: typography.numerals,
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.secondary,
+    color: '#8C5A40',
   },
   recDetailBtn: {
+    fontFamily: typography.sansBody,
     fontSize: 11,
     fontWeight: '700',
-    color: colors.primary,
+    color: '#1A3026',
     alignSelf: 'flex-end',
   },
   typingRow: {

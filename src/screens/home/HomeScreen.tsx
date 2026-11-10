@@ -3,7 +3,7 @@
  * Rich Dalat travel discovery hub with weather, featured spots, categories, and seasonal tips.
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -16,14 +16,23 @@ import {
 } from 'react-native';
 import { colors } from '../../theme/colors';
 import { borderRadius, shadows, spacing } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTourism } from '../../context/TourismContext';
+import { useAuth } from '../../context/AuthContext';
 import { ServiceCard } from '../../components/ServiceCard';
 import { DragScrollView } from '../../components/DragScrollView';
-import { DALAT_WEATHER, RECOMMENDED_ROUTES } from '../../data/dalatData';
+import { RECOMMENDED_ROUTES } from '../../data/dalatData';
+import { mysqlApiService } from '../../services/mysqlApiService';
+import {
+  fetchLiveDalatWeather,
+  getRealisticFallbackDalatWeather,
+  LiveDalatWeather,
+} from '../../services/weatherService';
 
 export const HomeScreen: React.FC = () => {
   const { t, language } = useLanguage();
+  const { currentUser, isGuest, isAdmin } = useAuth();
   const {
     services,
     categories,
@@ -34,15 +43,44 @@ export const HomeScreen: React.FC = () => {
   } = useTourism();
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [weather, setWeather] = useState<LiveDalatWeather>(() =>
+    getRealisticFallbackDalatWeather()
+  );
+  const [isWeatherLoading, setIsWeatherLoading] = useState<boolean>(false);
+
+  const loadLiveWeather = async () => {
+    setIsWeatherLoading(true);
+    const liveData = await fetchLiveDalatWeather();
+    setWeather(liveData);
+    setIsWeatherLoading(false);
+  };
+
+  useEffect(() => {
+    loadLiveWeather();
+    const interval = setInterval(loadLiveWeather, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSyncMockApi = async () => {
     setIsSyncing(true);
     await refreshData();
+    const dbStatus = await mysqlApiService.getStatus();
     setIsSyncing(false);
-    Alert.alert(
-      '✅ Đã đồng bộ MockAPI',
-      `Đã cập nhật dữ liệu trực tiếp từ MockAPI!\nHiện có ${services.length} điểm đến du lịch Đà Lạt đang hoạt động.`
-    );
+    if (dbStatus && dbStatus.connected) {
+      Alert.alert(
+        '✅ Đã đồng bộ MySQL Database',
+        `Kết nối CSDL: ${dbStatus.config.database} (${dbStatus.config.host}:${dbStatus.config.port})\n` +
+          `• Điểm đến (services): ${dbStatus.tableCounts.services}\n` +
+          `• Danh mục (categories): ${dbStatus.tableCounts.categories}\n` +
+          `• Người dùng (users): ${dbStatus.tableCounts.users}\n` +
+          `• Đánh giá (reviews): ${dbStatus.tableCounts.reviews}`
+      );
+    } else {
+      Alert.alert(
+        '✅ Đã đồng bộ dữ liệu',
+        `Đã cập nhật dữ liệu thành công!\nHiện có ${services.length} điểm đến du lịch Đà Lạt đang hoạt động.`
+      );
+    }
   };
 
   const featuredScrollRef = React.useRef<any>(null);
@@ -55,11 +93,33 @@ export const HomeScreen: React.FC = () => {
     featuredScrollRef.current?.scrollTo({ x: newOffset, animated: true });
   };
 
-  const featuredServices =
-    services.filter(s => s.isFeatured).length >= 4
-      ? services.filter(s => s.isFeatured)
-      : services.slice(0, 10);
-  const topRatedServices = [...services].sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 6);
+  const featuredServices = React.useMemo(() => {
+    const base =
+      services.filter(s => s.isFeatured).length >= 4
+        ? services.filter(s => s.isFeatured)
+        : services.slice(0, 12);
+    const copy = [...base];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = tmp;
+    }
+    return copy;
+  }, [services]);
+
+  const topRatedServices = React.useMemo(() => {
+    const highRated = services.filter(s => (s.rating || 0) >= 4.7);
+    const pool = highRated.length >= 6 ? highRated : services;
+    const copy = [...pool];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = copy[i];
+      copy[i] = copy[j];
+      copy[j] = tmp;
+    }
+    return copy.slice(0, 6);
+  }, [services]);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -67,11 +127,17 @@ export const HomeScreen: React.FC = () => {
       <View style={styles.heroSection}>
         <View style={styles.greetingRow}>
           <View>
-            <Text style={styles.greetingTitle}>{t('homeGreeting')}</Text>
+            <Text style={styles.greetingTitle}>
+              {currentUser
+                ? isGuest
+                  ? 'Kính chào, Khách'
+                  : `Kính chào, ${currentUser.fullName}`
+                : t('homeGreeting')}
+            </Text>
             <Text style={styles.greetingSubtitle}>{t('appSlogan')}</Text>
           </View>
           <View style={styles.memberTag}>
-            <Text style={styles.memberTagText}>Module: Bình</Text>
+            <Text style={styles.memberTagText}>Modern Editorial</Text>
           </View>
         </View>
 
@@ -91,71 +157,112 @@ export const HomeScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* 2. Dalat Weather & Highland Mist Widget */}
-      <View style={[styles.weatherCard, shadows.card]}>
+      {/* 2. Dalat Live Local Weather & Highland Microclimate Widget */}
+      <TouchableOpacity
+        style={[styles.weatherCard, shadows.card]}
+        onPress={loadLiveWeather}
+        activeOpacity={0.92}
+      >
+        <View style={styles.weatherLocationBar}>
+          <Text style={styles.weatherLocationText}>
+            📍 {language === 'vi' ? 'TP. Đà Lạt • Độ cao 1.500m' : 'Da Lat City • 1,500m Alt'}
+          </Text>
+          <Text style={styles.weatherUpdateText}>
+            {isWeatherLoading
+              ? language === 'vi'
+                ? 'Đang cập nhật...'
+                : 'Updating...'
+              : `${weather.isLiveApi ? '🟢 Trực tiếp' : '🕒 Địa phương'} ${weather.updatedAtText} ↻`}
+          </Text>
+        </View>
+
         <View style={styles.weatherTopRow}>
           <View style={styles.weatherLeft}>
-            <Text style={styles.weatherIcon}>{DALAT_WEATHER.icon}</Text>
+            <Text style={styles.weatherIcon}>{weather.icon}</Text>
             <View>
-              <Text style={styles.weatherTemp}>{DALAT_WEATHER.temp}°C</Text>
+              <View style={styles.weatherTempRow}>
+                <Text style={styles.weatherTemp}>{weather.temp}°C</Text>
+                <Text style={styles.weatherMinMax}>
+                  {weather.tempMin}° / {weather.tempMax}°C
+                </Text>
+              </View>
               <Text style={styles.weatherCondition}>
-                {language === 'vi' ? DALAT_WEATHER.conditionVi : DALAT_WEATHER.conditionEn}
+                {language === 'vi' ? weather.conditionVi : weather.conditionEn}
+              </Text>
+              <Text style={styles.weatherFeelsLike}>
+                {language === 'vi'
+                  ? `Cảm giác thực tế: ${weather.feelsLike}°C`
+                  : `Feels like: ${weather.feelsLike}°C`}
               </Text>
             </View>
           </View>
           <View style={styles.weatherBadge}>
             <Text style={styles.weatherBadgeText}>
-              {language === 'vi' ? DALAT_WEATHER.seasonVi : DALAT_WEATHER.seasonEn}
+              {language === 'vi' ? weather.seasonVi : weather.seasonEn}
             </Text>
           </View>
         </View>
+
+        {/* Detailed Local Meteorological Metrics */}
+        <View style={styles.weatherMetricsRow}>
+          <View style={styles.weatherMetricItem}>
+            <Text style={styles.weatherMetricLabel}>
+              💧 {language === 'vi' ? 'Độ ẩm' : 'Humidity'}
+            </Text>
+            <Text style={styles.weatherMetricValue}>{weather.humidity}%</Text>
+          </View>
+          <View style={styles.weatherMetricDivider} />
+          <View style={styles.weatherMetricItem}>
+            <Text style={styles.weatherMetricLabel}>
+              🌬️ {language === 'vi' ? 'Gió thông' : 'Wind'}
+            </Text>
+            <Text style={styles.weatherMetricValue}>{weather.windSpeedKmh} km/h</Text>
+          </View>
+          <View style={styles.weatherMetricDivider} />
+          <View style={styles.weatherMetricItem}>
+            <Text style={styles.weatherMetricLabel}>
+              ☔ {language === 'vi' ? 'Khả năng mưa' : 'Rain'}
+            </Text>
+            <Text style={styles.weatherMetricValue}>{weather.rainProbability}%</Text>
+          </View>
+          <View style={styles.weatherMetricDivider} />
+          <View style={styles.weatherMetricItem}>
+            <Text style={styles.weatherMetricLabel}>☀️ UV</Text>
+            <Text style={styles.weatherMetricValue}>{weather.uvIndex}</Text>
+          </View>
+        </View>
+
         <Text style={styles.weatherTip}>
-          💡 {language === 'vi' ? DALAT_WEATHER.travelTipVi : DALAT_WEATHER.travelTipEn}
+          💡 {language === 'vi' ? weather.travelTipVi : weather.travelTipEn}
         </Text>
-      </View>
+      </TouchableOpacity>
 
-      {/* Quick Interactive Actions: MockAPI Live Sync & AdMob Voucher */}
-      <View style={styles.interactiveWidgetRow}>
-        <TouchableOpacity
-          style={[styles.interactiveChip, shadows.subtle]}
-          onPress={handleSyncMockApi}
-          activeOpacity={0.8}
-        >
-          {isSyncing ? (
-            <ActivityIndicator size="small" color={colors.primary} />
-          ) : (
-            <Text style={styles.interactiveChipIcon}>🔄</Text>
-          )}
-          <View style={{ flex: 1 }}>
-            <Text style={styles.interactiveChipTitle}>Đồng bộ MockAPI</Text>
-            <Text style={styles.interactiveChipSubtitle}>
-              {services.length} điểm đến • Chạm để làm mới
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.interactiveChip, styles.admobChip, shadows.subtle]}
-          onPress={() => {
-            Alert.alert(
-              '🎁 Quảng cáo AdMob Có Thưởng',
-              'Chạm vào banner [Khám phá ➔] ở chân màn hình để xem video AdMob 5s và nhận ngay Voucher du lịch 50.000đ!',
-              [{ text: 'Đã hiểu' }]
-            );
-          }}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.interactiveChipIcon}>🎁</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.interactiveChipTitle, { color: '#B45309' }]}>
-              Voucher AdMob
-            </Text>
-            <Text style={styles.interactiveChipSubtitle}>
-              Xem video nhận 50k
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
+      {/* Quick Interactive Action: AdMob Voucher (Hidden for Admin) */}
+      {!isAdmin && (
+        <View style={styles.interactiveWidgetRow}>
+          <TouchableOpacity
+            style={[styles.interactiveChip, styles.admobChip, shadows.subtle]}
+            onPress={() => {
+              Alert.alert(
+                '🎁 Quảng cáo AdMob Có Thưởng',
+                'Chạm vào banner [Khám phá ➔] ở chân màn hình để xem video AdMob 5s và nhận ngay Voucher du lịch 50.000đ!',
+                [{ text: 'Đã hiểu' }]
+              );
+            }}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.interactiveChipIcon}>🎁</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.interactiveChipTitle, { color: '#B45309' }]}>
+                Voucher AdMob
+              </Text>
+              <Text style={styles.interactiveChipSubtitle}>
+                Xem video nhận 50k
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* 3. Horizontal Categories Bar */}
       <View style={styles.sectionHeader}>
@@ -315,6 +422,35 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },
+  guestBanner: {
+    backgroundColor: colors.warningLight,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.warning,
+  },
+  guestBannerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  guestBannerIcon: {
+    fontSize: 14,
+    color: colors.warning,
+    fontWeight: '700',
+  },
+  guestBannerTitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.warning,
+    letterSpacing: 0.5,
+  },
+  guestBannerSubtitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 10,
+    color: colors.text,
+  },
   greetingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -322,9 +458,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   greetingTitle: {
-    fontSize: 20,
-    fontWeight: '800',
+    fontFamily: typography.fontEditorial, // Times New Roman
+    fontSize: 21,
+    fontWeight: '700',
     color: '#FFF',
+    letterSpacing: 0.5,
   },
   greetingSubtitle: {
     fontSize: 12,
@@ -376,40 +514,111 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
+  weatherLocationBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  weatherLocationText: {
+    fontFamily: typography.fontMono,
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  weatherUpdateText: {
+    fontFamily: typography.fontMono,
+    fontSize: 9,
+    color: colors.textMuted,
+  },
   weatherTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 10,
   },
   weatherLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
+    flex: 1,
   },
   weatherIcon: {
-    fontSize: 28,
+    fontSize: 32,
+  },
+  weatherTempRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
   },
   weatherTemp: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '800',
     color: colors.text,
   },
-  weatherCondition: {
+  weatherMinMax: {
+    fontFamily: typography.fontMono,
     fontSize: 11,
-    color: colors.primaryLight,
     fontWeight: '600',
+    color: colors.textMuted,
+  },
+  weatherCondition: {
+    fontSize: 12,
+    color: colors.primaryLight,
+    fontWeight: '700',
+  },
+  weatherFeelsLike: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 1,
   },
   weatherBadge: {
     backgroundColor: colors.primaryMuted,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    maxWidth: '44%',
   },
   weatherBadgeText: {
     fontSize: 10,
     fontWeight: '700',
     color: colors.primary,
+    textAlign: 'center',
+  },
+  weatherMetricsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.cardMuted,
+    borderRadius: borderRadius.md,
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  weatherMetricItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  weatherMetricLabel: {
+    fontSize: 9,
+    color: colors.textMuted,
+    marginBottom: 2,
+  },
+  weatherMetricValue: {
+    fontFamily: typography.fontMono,
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  weatherMetricDivider: {
+    width: 1,
+    height: 22,
+    backgroundColor: colors.border,
   },
   weatherTip: {
     fontSize: 11,
@@ -425,9 +634,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   sectionTitle: {
+    fontFamily: typography.fontEditorial, // Times New Roman
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '700',
     color: colors.text,
+    letterSpacing: 0.5,
   },
   headerLeftWithArrows: {
     flexDirection: 'row',

@@ -3,13 +3,14 @@
  * Handles login, registration, password recovery, profile editing, and account status.
  */
 
-import { User } from '../types';
-import { storageService } from './storageService';
+import { Role, User } from '../types';
+import { GUEST_USER, storageService } from './storageService';
 
 class AuthService {
   async login(usernameOrEmail: string, passwordPlain: string): Promise<{ success: boolean; user?: User; error?: string }> {
-    const users = await storageService.getUsers();
     const cleanInput = usernameOrEmail.trim().toLowerCase();
+
+    const users = await storageService.getUsers();
 
     const user = users.find(
       u => u.username.toLowerCase() === cleanInput || u.email.toLowerCase() === cleanInput
@@ -33,14 +34,24 @@ class AuthService {
     return { success: true, user };
   }
 
+  async loginAsGuest(): Promise<{ success: boolean; user: User }> {
+    await storageService.saveCurrentUser(GUEST_USER);
+    return { success: true, user: GUEST_USER };
+  }
+
   async register(data: {
     username: string;
     email: string;
     fullName: string;
     phone: string;
     passwordPlain: string;
+    role?: Role;
   }): Promise<{ success: boolean; user?: User; error?: string }> {
     const users = await storageService.getUsers();
+
+    if (data.username.trim().toLowerCase() === 'guest' || data.username.trim().toLowerCase() === 'khach') {
+      return { success: false, error: 'Tên đăng nhập "guest" là tài khoản hệ thống dành riêng cho Khách' };
+    }
 
     if (users.some(u => u.username.toLowerCase() === data.username.trim().toLowerCase())) {
       return { success: false, error: 'Tên đăng nhập này đã được sử dụng' };
@@ -56,8 +67,10 @@ class AuthService {
       email: data.email.trim(),
       fullName: data.fullName.trim(),
       phone: data.phone.trim(),
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
-      role: 'user',
+      avatar: data.role === 'admin'
+        ? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80'
+        : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+      role: data.role || 'user',
       status: 'active',
       createdAt: new Date().toISOString(),
     };

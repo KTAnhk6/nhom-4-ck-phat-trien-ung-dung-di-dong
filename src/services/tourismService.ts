@@ -15,10 +15,29 @@ import { API_CONFIG } from '../config/apiConfig';
 import { mockApiService } from './mockApiService';
 import { storageService } from './storageService';
 
+export function extractServiceNumericIndex(id?: string): number | null {
+  if (!id) return null;
+  const trimmed = String(id).trim();
+  if (/^\d+$/.test(trimmed)) return Number(trimmed);
+  const m = trimmed.match(/^SRV_0*(\d+)_/i);
+  return m ? Number(m[1]) : null;
+}
+
+export function isSameServiceId(idA?: string, idB?: string): boolean {
+  if (!idA || !idB) return false;
+  if (idA === idB) return true;
+  const numA = extractServiceNumericIndex(idA);
+  const numB = extractServiceNumericIndex(idB);
+  return numA !== null && numA === numB;
+}
+
 class TourismServiceManager {
   // ================= SERVICES =================
 
   async getAllServices(): Promise<TourismService[]> {
+    if (API_CONFIG.USE_MYSQL_DATABASE) {
+      return await storageService.getServices();
+    }
     if (API_CONFIG.USE_MOCK_API) {
       try {
         const remoteList = await mockApiService.getServices();
@@ -35,7 +54,7 @@ class TourismServiceManager {
   }
 
   async getServiceById(id: string): Promise<TourismService | null> {
-    if (API_CONFIG.USE_MOCK_API) {
+    if (!API_CONFIG.USE_MYSQL_DATABASE && API_CONFIG.USE_MOCK_API) {
       try {
         const remoteItem = await mockApiService.getServiceById(id);
         if (remoteItem) return remoteItem;
@@ -44,7 +63,7 @@ class TourismServiceManager {
       }
     }
     const list = await storageService.getServices();
-    return list.find(s => s.id === id) || null;
+    return list.find(s => isSameServiceId(s.id, id)) || null;
   }
 
   async filterAndSortServices(
@@ -191,7 +210,7 @@ class TourismServiceManager {
 
   async getCategories(): Promise<ServiceCategory[]> {
     let categories: ServiceCategory[] = [];
-    if (API_CONFIG.USE_MOCK_API) {
+    if (!API_CONFIG.USE_MYSQL_DATABASE && API_CONFIG.USE_MOCK_API) {
       try {
         const remoteCats = await mockApiService.getCategories();
         if (remoteCats && remoteCats.length > 0) {
@@ -247,7 +266,7 @@ class TourismServiceManager {
 
   async getReviewsForService(serviceId: string): Promise<Review[]> {
     const all = await storageService.getReviews();
-    return all.filter(r => r.serviceId === serviceId && r.status === 'approved');
+    return all.filter(r => isSameServiceId(r.serviceId, serviceId) && r.status === 'approved');
   }
 
   async getAllReviews(): Promise<Review[]> {
@@ -266,12 +285,14 @@ class TourismServiceManager {
     await storageService.saveReviews(all);
 
     // Recalculate average rating & reviewCount for the service
-    const serviceReviews = all.filter(r => r.serviceId === reviewData.serviceId && r.status === 'approved');
+    const serviceReviews = all.filter(
+      r => isSameServiceId(r.serviceId, reviewData.serviceId) && r.status === 'approved'
+    );
     const totalRating = serviceReviews.reduce((sum, r) => sum + r.rating, 0);
     const avgRating = Number((totalRating / serviceReviews.length).toFixed(1));
 
     const services = await storageService.getServices();
-    const sIndex = services.findIndex(s => s.id === reviewData.serviceId);
+    const sIndex = services.findIndex(s => isSameServiceId(s.id, reviewData.serviceId));
     if (sIndex !== -1) {
       services[sIndex].rating = avgRating;
       services[sIndex].reviewCount = serviceReviews.length;
@@ -304,10 +325,10 @@ class TourismServiceManager {
 
   async toggleFavorite(serviceId: string): Promise<boolean> {
     const favs = await storageService.getFavorites();
-    const exists = favs.includes(serviceId);
+    const exists = favs.some(id => isSameServiceId(id, serviceId));
     let updated: string[];
     if (exists) {
-      updated = favs.filter(id => id !== serviceId);
+      updated = favs.filter(id => !isSameServiceId(id, serviceId));
     } else {
       updated = [...favs, serviceId];
     }

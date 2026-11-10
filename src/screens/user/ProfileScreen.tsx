@@ -1,11 +1,10 @@
 /**
- * Profile Screen (Assigned to: Tuấn Anh - Auth & User)
- * User dashboard with account details, quick navigation, role switcher, and settings.
+ * Profile Screen - Modern Editorial Edition (Assigned to: Tuấn Anh - Auth & User)
+ * Bảng thông tin cá nhân và menu tính năng người dùng.
  */
 
 import React from 'react';
 import {
-  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -14,28 +13,20 @@ import {
   View,
 } from 'react-native';
 import { colors } from '../../theme/colors';
-import { borderRadius, shadows, spacing } from '../../theme/spacing';
+import { spacing } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTourism } from '../../context/TourismContext';
 
 export const ProfileScreen: React.FC = () => {
   const { t, language, toggleLanguage } = useLanguage();
-  const { currentUser, isAdmin, logout, switchDemoUser } = useAuth();
+  const { currentUser, isAdmin, isGuest, logout } = useAuth();
   const { navigate, favorites, notifications } = useTourism();
 
-  const handleLogout = () => {
-    Alert.alert(t('logout'), t('logoutConfirm'), [
-      { text: t('cancel'), style: 'cancel' },
-      {
-        text: t('logout'),
-        style: 'destructive',
-        onPress: async () => {
-          await logout();
-          navigate('LOGIN');
-        },
-      },
-    ]);
+  const handleLogout = async () => {
+    await logout();
+    navigate('LOGIN');
   };
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -43,96 +34,98 @@ export const ProfileScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Profile Card */}
-      <View style={[styles.profileCard, shadows.card]}>
+      <View style={styles.profileCard}>
         <View style={styles.avatarRow}>
-          <Image
-            source={{
-              uri:
-                currentUser?.avatar ||
-                'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-            }}
-            style={styles.avatar}
-          />
+          {!isGuest && !isAdmin && currentUser?.avatar ? (
+            <Image
+              source={{ uri: currentUser.avatar }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={styles.defaultAvatar}>
+              <Text style={styles.defaultAvatarIcon}>👤</Text>
+            </View>
+          )}
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
               <Text style={styles.fullName}>
-                {currentUser?.fullName || 'Khách Du Lịch'}
+                {isGuest ? 'Khách' : currentUser?.fullName}
               </Text>
               <View
                 style={[
                   styles.roleBadge,
-                  isAdmin ? styles.roleBadgeAdmin : styles.roleBadgeUser,
+                  isAdmin
+                    ? styles.roleBadgeAdmin
+                    : isGuest
+                      ? styles.roleBadgeGuest
+                      : styles.roleBadgeUser,
                 ]}
               >
                 <Text
                   style={[
                     styles.roleBadgeText,
-                    isAdmin ? styles.roleBadgeTextAdmin : styles.roleBadgeTextUser,
+                    isAdmin
+                      ? styles.roleBadgeTextAdmin
+                      : isGuest
+                        ? styles.roleBadgeTextGuest
+                        : styles.roleBadgeTextUser,
                   ]}
                 >
-                  {isAdmin ? 'ADMIN' : 'MEMBER'}
+                  {isAdmin ? 'ADMIN' : isGuest ? 'GUEST' : 'MEMBER'}
                 </Text>
               </View>
             </View>
-            <Text style={styles.usernameText}>@{currentUser?.username || 'khach'}</Text>
-            <Text style={styles.contactText}>✉ {currentUser?.email || 'N/A'}</Text>
-            <Text style={styles.contactText}>📞 {currentUser?.phone || 'N/A'}</Text>
+            {isGuest ? (
+              <Text style={styles.guestSubText}>
+                Chưa đăng nhập tài khoản
+              </Text>
+            ) : (
+              <>
+                <Text style={styles.usernameText}>@{currentUser?.username}</Text>
+                <Text style={styles.contactText}>✉ {currentUser?.email}</Text>
+                <Text style={styles.contactText}>📞 {currentUser?.phone}</Text>
+              </>
+            )}
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.editBtn}
-          onPress={() => navigate('EDIT_PROFILE')}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.editBtnText}>✏️ {t('editProfile')}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Quick Demo Switcher for Grading / Testing */}
-      <View style={[styles.sectionCard, shadows.card]}>
-        <Text style={styles.sectionTitle}>Chuyển đổi vai trò kiểm tra (Tuấn Anh)</Text>
-        <Text style={styles.sectionSubtitle}>
-          Nhấn để chuyển nhanh giữa vai trò Người Dùng thường và Quản Trị Viên (Admin).
-        </Text>
-        <View style={styles.switcherRow}>
+        {!isGuest ? (
           <TouchableOpacity
-            style={[styles.switchBtn, !isAdmin && styles.switchBtnActive]}
-            onPress={() => switchDemoUser('user')}
+            style={styles.editBtn}
+            onPress={() => navigate('EDIT_PROFILE')}
+            activeOpacity={0.7}
           >
-            <Text style={[styles.switchText, !isAdmin && styles.switchTextActive]}>
-              👤 Người dùng thường (Tuấn Anh)
-            </Text>
+            <Text style={styles.editBtnText}>✏️ {t('editProfile')}</Text>
           </TouchableOpacity>
+        ) : (
           <TouchableOpacity
-            style={[styles.switchBtn, isAdmin && styles.switchBtnActiveAdmin]}
-            onPress={() => switchDemoUser('admin')}
+            style={[styles.editBtn, styles.loginNavBtn]}
+            onPress={handleLogout}
+            activeOpacity={0.7}
           >
-            <Text style={[styles.switchText, isAdmin && styles.switchTextActiveAdmin]}>
-              ⚙️ Admin Quản trị (Việt)
-            </Text>
+            <Text style={styles.loginNavBtnText}>🔑 Đăng nhập tài khoản</Text>
           </TouchableOpacity>
-        </View>
+        )}
       </View>
 
       {/* Admin Quick Action (if admin) */}
       {isAdmin && (
-        <View style={[styles.sectionCard, styles.adminCard, shadows.card]}>
+        <View style={[styles.sectionCard, styles.adminCard]}>
           <View style={styles.adminHeader}>
-            <Text style={styles.adminTitle}>⚙️ {t('adminDashboard')}</Text>
-            <Text style={styles.adminSubtitle}>Phân hệ quản trị (Việt)</Text>
+            <Text style={styles.adminTitle}>⚙️ TRANG QUẢN TRỊ HỆ THỐNG</Text>
+            <Text style={styles.adminSubtitle}>Phân hệ quản lý toàn diện dành cho Quản trị viên</Text>
           </View>
           <TouchableOpacity
             style={styles.adminEnterBtn}
             onPress={() => navigate('ADMIN_DASHBOARD')}
           >
-            <Text style={styles.adminEnterText}>Mở Trang Quản Trị Admin →</Text>
+            <Text style={styles.adminEnterText}>MỞ DASHBOARD QUẢN TRỊ →</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {/* User Feature Menu Links */}
-      <View style={[styles.menuList, shadows.card]}>
+      <View style={styles.menuList}>
         {/* Saved Places / Favorites */}
         <TouchableOpacity
           style={styles.menuItem}
@@ -216,18 +209,22 @@ export const ProfileScreen: React.FC = () => {
       </View>
 
       {/* Logout Action */}
-      <TouchableOpacity
-        style={styles.logoutBtn}
-        onPress={handleLogout}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.logoutText}>🚪 {t('logout')}</Text>
-      </TouchableOpacity>
+      <View style={styles.logoutActionContainer}>
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={handleLogout}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.logoutText}>
+            🚪 {isGuest ? 'Quay lại màn hình Đăng nhập' : t('logout')}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.footerInfo}>
-        <Text style={styles.versionText}>Đà Lạt Wander v1.0.0 • React Native</Text>
+        <Text style={styles.versionText}>ĐÀ LẠT WANDER • MODERN EDITORIAL 2026</Text>
         <Text style={styles.creditText}>
-          Nhóm: Tuấn Anh • Bình • Quang • Minh Anh • Việt
+          Phân công: Tuấn Anh (Auth) • Bình (Home) • Quang (Search) • Minh Anh (Review) • Việt (Admin)
         </Text>
       </View>
     </ScrollView>
@@ -240,24 +237,88 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     padding: spacing.md,
   },
+  guestAlertCard: {
+    backgroundColor: colors.warningLight,
+    padding: spacing.md,
+    borderRadius: 2,
+    borderWidth: 1,
+    borderColor: colors.warning,
+    marginBottom: spacing.md,
+  },
+  guestAlertHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  guestAlertIcon: {
+    fontSize: 14,
+  },
+  guestAlertTitle: {
+    fontFamily: typography.fontSans,
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.warning,
+    letterSpacing: 0.5,
+  },
+  guestAlertDesc: {
+    fontFamily: typography.fontSans,
+    fontSize: 11,
+    color: colors.text,
+    lineHeight: 16,
+    marginBottom: spacing.sm,
+  },
+  guestLoginBtn: {
+    backgroundColor: colors.warning,
+    paddingVertical: 7,
+    alignItems: 'center',
+    borderRadius: 2,
+  },
+  guestLoginBtnText: {
+    fontFamily: typography.fontSans,
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
   profileCard: {
     backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
+    borderRadius: 2,
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: colors.border,
   },
   avatarRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 66,
+    height: 66,
+    borderRadius: 33,
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: colors.border,
+  },
+  defaultAvatar: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    backgroundColor: colors.cardMuted,
+    borderWidth: 2,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  defaultAvatarIcon: {
+    fontSize: 30,
+    color: colors.textMuted,
+  },
+  guestSubText: {
+    fontFamily: typography.fontSans,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 4,
   },
   userInfo: {
     marginLeft: spacing.md,
@@ -270,14 +331,15 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   fullName: {
-    fontSize: 16,
+    fontFamily: typography.fontEditorial,
+    fontSize: 17,
     fontWeight: '700',
     color: colors.text,
   },
   roleBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingVertical: 1.5,
+    borderRadius: 2,
   },
   roleBadgeAdmin: {
     backgroundColor: colors.secondaryMuted,
@@ -289,9 +351,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.primary,
   },
+  roleBadgeGuest: {
+    backgroundColor: colors.warningLight,
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
   roleBadgeText: {
-    fontSize: 9,
+    fontFamily: typography.fontMono,
+    fontSize: 8,
     fontWeight: '800',
+    letterSpacing: 0.5,
   },
   roleBadgeTextAdmin: {
     color: colors.secondary,
@@ -299,122 +368,98 @@ const styles = StyleSheet.create({
   roleBadgeTextUser: {
     color: colors.primary,
   },
+  roleBadgeTextGuest: {
+    color: colors.warning,
+  },
   usernameText: {
-    fontSize: 12,
-    color: colors.primaryLight,
-    fontWeight: '600',
+    fontFamily: typography.fontMono,
+    fontSize: 11,
+    color: colors.textMuted,
     marginVertical: 2,
   },
   contactText: {
+    fontFamily: typography.fontSans,
     fontSize: 11,
     color: colors.textMuted,
   },
   editBtn: {
     marginTop: spacing.md,
-    paddingVertical: 8,
-    borderRadius: borderRadius.md,
+    paddingVertical: 9,
+    borderRadius: 2,
     backgroundColor: colors.cardMuted,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border,
   },
   editBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  sectionCard: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  sectionSubtitle: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
-    marginBottom: spacing.sm,
-  },
-  switcherRow: {
-    gap: 8,
-  },
-  switchBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.cardMuted,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-  },
-  switchBtnActive: {
-    backgroundColor: colors.primaryMuted,
-    borderColor: colors.primary,
-  },
-  switchBtnActiveAdmin: {
-    backgroundColor: colors.secondaryMuted,
-    borderColor: colors.secondary,
-  },
-  switchText: {
+    fontFamily: typography.fontSans,
     fontSize: 12,
     fontWeight: '600',
     color: colors.text,
   },
-  switchTextActive: {
-    color: colors.primary,
-    fontWeight: '700',
+  loginNavBtn: {
+    backgroundColor: colors.text,
+    borderColor: colors.text,
   },
-  switchTextActiveAdmin: {
-    color: colors.secondary,
+  loginNavBtnText: {
+    fontFamily: typography.fontSans,
+    fontSize: 12,
     fontWeight: '700',
+    color: '#FFF',
+  },
+  sectionCard: {
+    backgroundColor: colors.card,
+    borderRadius: 2,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   adminCard: {
-    backgroundColor: '#FFF8F6',
-    borderColor: '#FFD6CC',
+    borderColor: colors.secondary,
+    backgroundColor: colors.secondaryMuted,
   },
   adminHeader: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   adminTitle: {
-    fontSize: 15,
+    fontFamily: typography.fontEditorial,
+    fontSize: 13,
     fontWeight: '700',
     color: colors.secondary,
+    letterSpacing: 0.5,
   },
   adminSubtitle: {
-    fontSize: 11,
+    fontFamily: typography.fontSans,
+    fontSize: 10,
     color: colors.textMuted,
   },
   adminEnterBtn: {
     backgroundColor: colors.secondary,
-    paddingVertical: 10,
-    borderRadius: borderRadius.md,
+    paddingVertical: 8,
+    borderRadius: 2,
     alignItems: 'center',
+    marginTop: spacing.xs,
   },
   adminEnterText: {
+    fontFamily: typography.fontSans,
     color: '#FFF',
+    fontSize: 11,
     fontWeight: '700',
-    fontSize: 13,
+    letterSpacing: 0.5,
   },
   menuList: {
     backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    marginBottom: spacing.lg,
+    borderRadius: 2,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 13,
+    paddingVertical: 12,
     paddingHorizontal: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
@@ -428,9 +473,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   menuLabel: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontFamily: typography.fontSans,
+    fontSize: 13,
     color: colors.text,
+    fontWeight: '500',
   },
   menuRight: {
     flexDirection: 'row',
@@ -438,64 +484,65 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   countBadge: {
-    fontSize: 12,
+    fontFamily: typography.fontMono,
+    fontSize: 11,
     fontWeight: '700',
-    color: colors.primary,
-    backgroundColor: colors.primaryMuted,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  unreadBadge: {
-    backgroundColor: colors.danger,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  unreadText: {
-    color: '#FFF',
-    fontSize: 10,
-    fontWeight: '800',
+    color: colors.textMuted,
   },
   menuArrow: {
     fontSize: 18,
     color: colors.textLight,
   },
+  unreadBadge: {
+    backgroundColor: colors.danger,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+  },
+  unreadText: {
+    fontFamily: typography.fontSans,
+    color: '#FFF',
+    fontSize: 9,
+    fontWeight: '700',
+  },
   langValue: {
+    fontFamily: typography.fontSans,
     fontSize: 12,
+    color: colors.textMuted,
     fontWeight: '600',
-    color: colors.primary,
+  },
+  logoutActionContainer: {
+    marginBottom: spacing.lg,
   },
   logoutBtn: {
-    height: 46,
-    borderRadius: borderRadius.md,
     backgroundColor: colors.card,
-    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 2,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.danger,
-    marginBottom: spacing.lg,
   },
   logoutText: {
-    color: colors.danger,
-    fontSize: 14,
+    fontFamily: typography.fontSans,
+    fontSize: 13,
     fontWeight: '700',
+    color: colors.danger,
   },
   footerInfo: {
     alignItems: 'center',
     paddingBottom: spacing.xxl,
   },
   versionText: {
-    fontSize: 11,
-    color: colors.textLight,
-    fontWeight: '600',
+    fontFamily: typography.fontMono,
+    fontSize: 9,
+    letterSpacing: 1,
+    color: colors.textMuted,
   },
   creditText: {
+    fontFamily: typography.fontSans,
     fontSize: 10,
-    color: colors.textMuted,
+    color: colors.textLight,
     marginTop: 2,
+    textAlign: 'center',
   },
 });

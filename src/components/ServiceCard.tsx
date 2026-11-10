@@ -14,6 +14,7 @@ import {
 import { TourismService } from '../types';
 import { colors } from '../theme/colors';
 import { borderRadius, shadows, spacing } from '../theme/spacing';
+import { typography } from '../theme/typography';
 import { useTourism } from '../context/TourismContext';
 
 interface ServiceCardProps {
@@ -177,10 +178,12 @@ const styles = StyleSheet.create({
     padding: spacing.sm + 2,
   },
   hName: {
-    fontSize: 14,
+    fontFamily: typography.fontEditorial, // Times New Roman
+    fontSize: 15,
     fontWeight: '700',
     color: colors.text,
     marginVertical: 2,
+    letterSpacing: 0.3,
   },
 
   // List Card Layout
@@ -213,10 +216,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listName: {
-    fontSize: 14,
+    fontFamily: typography.fontEditorial, // Times New Roman
+    fontSize: 15,
     fontWeight: '700',
     color: colors.text,
     marginVertical: 2,
+    letterSpacing: 0.3,
   },
   bottomRow: {
     flexDirection: 'row',

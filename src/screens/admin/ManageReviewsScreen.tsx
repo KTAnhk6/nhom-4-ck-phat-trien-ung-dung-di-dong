@@ -85,7 +85,13 @@ export const ManageReviewsScreen: React.FC = () => {
           return (
             <View style={[styles.reviewCard, shadows.card]}>
               <View style={styles.headerRow}>
-                <Image source={{ uri: item.userAvatar }} style={styles.avatar} />
+                {item.userAvatar && item.userId !== 'USR_ADMIN' ? (
+                  <Image source={{ uri: item.userAvatar }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.defaultAvatar}>
+                    <Text style={{ fontSize: 18 }}>👤</Text>
+                  </View>
+                )}
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <Text style={styles.userName}>{item.userName}</Text>
                   <Text style={styles.serviceName}>📍 {item.serviceName}</Text>
@@ -200,6 +206,16 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
+  },
+  defaultAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.cardMuted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   userName: {
     fontSize: 13,

@@ -29,8 +29,10 @@ export const EditProfileScreen: React.FC = () => {
   const [email, setEmail] = useState(currentUser?.email || '');
   const [phone, setPhone] = useState(currentUser?.phone || '');
   const [avatar, setAvatar] = useState(
-    currentUser?.avatar ||
-      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
+    currentUser?.role === 'admin'
+      ? ''
+      : currentUser?.avatar ||
+          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
   );
 
   const sampleAvatars = [
@@ -70,9 +72,26 @@ export const EditProfileScreen: React.FC = () => {
       <View style={[styles.card, shadows.card]}>
         {/* Avatar preview */}
         <View style={styles.avatarSection}>
-          <Image source={{ uri: avatar }} style={styles.avatarPreview} />
+          {avatar ? (
+            <Image source={{ uri: avatar }} style={styles.avatarPreview} />
+          ) : (
+            <View style={styles.defaultAvatarPreview}>
+              <Text style={styles.defaultAvatarIcon}>👤</Text>
+            </View>
+          )}
           <Text style={styles.avatarLabel}>Chọn ảnh đại diện mẫu:</Text>
           <View style={styles.avatarPickerRow}>
+            <TouchableOpacity
+              onPress={() => setAvatar('')}
+              style={[
+                styles.sampleAvatarWrap,
+                !avatar && styles.sampleAvatarWrapActive,
+              ]}
+            >
+              <View style={styles.sampleDefaultAvatar}>
+                <Text style={{ fontSize: 18 }}>👤</Text>
+              </View>
+            </TouchableOpacity>
             {sampleAvatars.map((url, i) => (
               <TouchableOpacity
                 key={i}
@@ -195,6 +214,28 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: colors.primary,
     marginBottom: spacing.sm,
+  },
+  defaultAvatarPreview: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: colors.primary,
+    backgroundColor: colors.cardMuted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  defaultAvatarIcon: {
+    fontSize: 36,
+  },
+  sampleDefaultAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.cardMuted,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   avatarLabel: {
     fontSize: 12,

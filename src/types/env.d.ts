@@ -22,3 +22,4 @@ declare module 'react-native-svg' {
   const _default: any;
   export default _default;
 }
+

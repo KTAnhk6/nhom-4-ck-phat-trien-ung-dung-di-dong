@@ -1,11 +1,13 @@
 /**
- * Bottom Navigation Bar
- * 5 primary tabs: Home, Services, Search, AI Chatbot, and Profile.
+ * Bottom Navigation Bar - Modern Editorial
+ * Thanh tác vụ đơn màu (Solid Monochromatic Taskbar)
+ * Thiết kế tối giản đơn sắc Obsidian Noir cao cấp, thanh lịch, chuẩn tạp chí.
  */
 
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors } from '../theme/colors';
+import { typography } from '../theme/typography';
 import { useLanguage } from '../context/LanguageContext';
 import { useTourism } from '../context/TourismContext';
 import { useAuth } from '../context/AuthContext';
@@ -14,14 +16,20 @@ import { ScreenName } from '../types';
 export const BottomNav: React.FC = () => {
   const { t } = useLanguage();
   const { currentScreen, navigate } = useTourism();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isGuest } = useAuth();
 
-  const tabs: { screen: ScreenName; labelKey: any; icon: string }[] = [
-    { screen: 'HOME', labelKey: 'navHome', icon: '🏠' },
-    { screen: 'SERVICE_LIST', labelKey: 'navServices', icon: '🌲' },
-    { screen: 'SEARCH', labelKey: 'navSearch', icon: '🔍' },
-    { screen: 'CHATBOT', labelKey: 'navChatbot', icon: '🤖' },
-    { screen: 'PROFILE', labelKey: isAdmin ? 'navAdmin' : 'navProfile', icon: isAdmin ? '⚙️' : '👤' },
+  const getProfileLabel = () => {
+    if (isAdmin) return t('navAdmin');
+    if (isGuest) return 'Khách';
+    return t('navProfile');
+  };
+
+  const tabs: { screen: ScreenName; label: string; icon: string }[] = [
+    { screen: 'HOME', label: t('navHome'), icon: '🏠' },
+    { screen: 'SERVICE_LIST', label: t('navServices'), icon: '🌲' },
+    { screen: 'SEARCH', label: t('navSearch'), icon: '🔍' },
+    { screen: 'CHATBOT', label: t('navChatbot'), icon: '🤖' },
+    { screen: 'PROFILE', label: getProfileLabel(), icon: isAdmin ? '⚙️' : isGuest ? '👤' : '✨' },
   ];
 
   const isTabActive = (screen: ScreenName) => {
@@ -40,14 +48,13 @@ export const BottomNav: React.FC = () => {
             key={tab.screen}
             style={styles.tabItem}
             onPress={() => navigate(tab.screen)}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
-            <View style={[styles.iconWrapper, active && styles.activeIconWrapper]}>
-              <Text style={styles.tabIcon}>{tab.icon}</Text>
-            </View>
+            <Text style={[styles.tabIcon, active && styles.activeTabIcon]}>{tab.icon}</Text>
             <Text style={[styles.tabLabel, active && styles.activeTabLabel]}>
-              {t(tab.labelKey)}
+              {tab.label}
             </Text>
+            {active ? <View style={styles.activeDot} /> : <View style={styles.inactiveDot} />}
           </TouchableOpacity>
         );
       })}
@@ -57,12 +64,12 @@ export const BottomNav: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 62,
+    height: 60,
     flexDirection: 'row',
-    backgroundColor: colors.card,
+    backgroundColor: colors.taskbarBg, // Thanh tác vụ đơn màu: Obsidian Noir #181818
     borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
-    paddingBottom: 4,
+    borderTopColor: colors.taskbarBorder,
+    paddingBottom: 2,
   },
   tabItem: {
     flex: 1,
@@ -70,27 +77,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 4,
   },
-  iconWrapper: {
-    width: 32,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activeIconWrapper: {
-    backgroundColor: colors.primaryMuted,
-  },
   tabIcon: {
     fontSize: 16,
+    opacity: 0.65,
+  },
+  activeTabIcon: {
+    opacity: 1,
+    transform: [{ scale: 1.08 }],
   },
   tabLabel: {
+    fontFamily: typography.fontSans,
     fontSize: 10,
-    fontWeight: '600',
-    color: colors.textMuted,
+    fontWeight: '500',
+    color: colors.taskbarInactive,
     marginTop: 2,
+    letterSpacing: 0.3,
   },
   activeTabLabel: {
-    color: colors.primary,
-    fontWeight: '800',
+    color: colors.taskbarActive,
+    fontWeight: '700',
+  },
+  activeDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: colors.taskbarActive,
+    marginTop: 2,
+  },
+  inactiveDot: {
+    width: 3,
+    height: 3,
+    marginTop: 2,
+    backgroundColor: 'transparent',
   },
 });

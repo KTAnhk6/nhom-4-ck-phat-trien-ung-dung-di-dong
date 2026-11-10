@@ -36,14 +36,32 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
   onSuccess,
 }) => {
   const { t } = useLanguage();
-  const { currentUser } = useAuth();
-  const { addReview } = useTourism();
+  const { currentUser, isGuest } = useAuth();
+  const { addReview, navigate } = useTourism();
 
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    if (isGuest || currentUser?.role === 'guest') {
+      Alert.alert(
+        'Chế độ Khách (Giới hạn tính năng)',
+        'Bạn đang duyệt ở chế độ Khách. Vui lòng đăng nhập hoặc đăng ký tài khoản để gửi đánh giá!',
+        [
+          { text: 'Hủy', style: 'cancel' },
+          {
+            text: 'Đăng nhập ngay',
+            onPress: () => {
+              onClose();
+              navigate('LOGIN');
+            },
+          },
+        ]
+      );
+      return;
+    }
+
     if (!comment.trim()) {
       Alert.alert('Thông báo', 'Vui lòng nhập nội dung đánh giá của bạn');
       return;
@@ -86,6 +104,27 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
           </View>
 
           <Text style={styles.serviceNameText}>{serviceName}</Text>
+
+          {/* Guest restriction warning notice */}
+          {(isGuest || currentUser?.role === 'guest') && (
+            <View style={{ backgroundColor: colors.warningLight, padding: 10, borderRadius: 3, marginBottom: 12, borderWidth: 1, borderColor: colors.warning }}>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: colors.warning, marginBottom: 2 }}>
+                ⚠️ TÀI KHOẢN KHÁCH BỊ GIỚI HẠN
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.text, marginBottom: 8, lineHeight: 15 }}>
+                Bạn đang duyệt ở chế độ Khách. Vui lòng đăng nhập hoặc tạo tài khoản để gửi đánh giá điểm đến này.
+              </Text>
+              <TouchableOpacity
+                style={{ backgroundColor: colors.text, paddingVertical: 6, borderRadius: 2, alignItems: 'center' }}
+                onPress={() => {
+                  onClose();
+                  navigate('LOGIN');
+                }}
+              >
+                <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '700' }}>ĐĂNG NHẬP NGAY →</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Star Rating Picker */}
           <View style={styles.starSection}>
