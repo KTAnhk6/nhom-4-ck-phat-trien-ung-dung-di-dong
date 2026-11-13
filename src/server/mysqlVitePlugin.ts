@@ -270,9 +270,10 @@ class MysqlRelationalEngine {
       this.db.exec("UPDATE reviews SET user_avatar = '' WHERE user_id = 'USR_ADMIN';");
     }
 
-    // Seed Reviews if empty
+    // Seed Reviews if empty or outdated
     const revCount = (this.db.prepare('SELECT COUNT(*) as c FROM reviews').get() as any).c;
-    if (revCount === 0) {
+    if (revCount < INITIAL_REVIEWS.length) {
+      this.db.exec('DELETE FROM reviews;');
       const stmt = this.db.prepare(`
         INSERT INTO reviews (
           id, service_id, service_name, user_id, user_name, user_avatar,
@@ -295,6 +296,12 @@ class MysqlRelationalEngine {
         );
       }
       this.logQuery(`INSERT INTO reviews (${INITIAL_REVIEWS.length} reviews)`);
+    }
+
+    // Always keep services rating & review_count in sync with INITIAL_SERVICES
+    const syncSrvStmt = this.db.prepare('UPDATE services SET rating = ?, review_count = ? WHERE id = ?');
+    for (const s of INITIAL_SERVICES) {
+      syncSrvStmt.run(s.rating, s.reviewCount, s.id);
     }
 
     // Seed Favorites if empty

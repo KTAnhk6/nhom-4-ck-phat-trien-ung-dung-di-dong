@@ -122,7 +122,7 @@ class DalatStorageService {
 
       // 5. Reviews
       const revJson = await storage.getItem(STORAGE_KEYS.REVIEWS);
-      if (!revJson) {
+      if (!revJson || JSON.parse(revJson).length < INITIAL_REVIEWS.length) {
         await storage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(INITIAL_REVIEWS));
       }
 
@@ -258,13 +258,24 @@ class DalatStorageService {
   // REVIEWS CRUD (MySQL Database + AsyncStorage Cache)
   async getReviews(): Promise<Review[]> {
     const mysqlReviews = await mysqlApiService.getReviews();
-    if (mysqlReviews && Array.isArray(mysqlReviews)) {
+    if (mysqlReviews && Array.isArray(mysqlReviews) && mysqlReviews.length >= INITIAL_REVIEWS.length) {
       await storage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(mysqlReviews));
       return mysqlReviews;
     }
 
     const json = await storage.getItem(STORAGE_KEYS.REVIEWS);
-    return json ? JSON.parse(json) : INITIAL_REVIEWS;
+    if (!json) {
+      await storage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(INITIAL_REVIEWS));
+      return INITIAL_REVIEWS;
+    }
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed) && parsed.length >= INITIAL_REVIEWS.length) {
+        return parsed;
+      }
+    } catch {}
+    await storage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(INITIAL_REVIEWS));
+    return INITIAL_REVIEWS;
   }
 
   async saveReviews(reviews: Review[]): Promise<void> {

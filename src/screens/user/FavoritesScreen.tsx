@@ -19,7 +19,7 @@ import { ServiceCard } from '../../components/ServiceCard';
 import { isSameServiceId } from '../../services/tourismService';
 
 export const FavoritesScreen: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { services, favorites, goBack, navigate } = useTourism();
 
   const favoriteServices = services.filter(s =>
@@ -36,7 +36,7 @@ export const FavoritesScreen: React.FC = () => {
         <View style={{ flex: 1, marginLeft: 10 }}>
           <Text style={styles.headerTitle}>{t('savedPlaces')}</Text>
           <Text style={styles.headerSubtitle}>
-            {favoriteServices.length} địa điểm đã lưu • Phụ trách: Minh Anh
+            {favoriteServices.length} {language === 'vi' ? 'địa điểm đã lưu • Phụ trách: Minh Anh' : 'saved places • Assigned: Minh Anh'}
           </Text>
         </View>
       </View>
@@ -50,15 +50,21 @@ export const FavoritesScreen: React.FC = () => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyEmoji}>🤍</Text>
-            <Text style={styles.emptyTitle}>Chưa có địa điểm yêu thích nào</Text>
+            <Text style={styles.emptyTitle}>
+              {language === 'vi' ? 'Chưa có địa điểm yêu thích nào' : 'No favorite places yet'}
+            </Text>
             <Text style={styles.emptyDesc}>
-              Nhấn vào biểu tượng trái tim khi xem các quán cà phê, homestay hoặc điểm du lịch để lưu lại danh sách này nhé!
+              {language === 'vi'
+                ? 'Nhấn vào biểu tượng trái tim khi xem các quán cà phê, homestay hoặc điểm du lịch để lưu lại danh sách này nhé!'
+                : 'Tap the heart icon when viewing cafes, homestays, or attractions to save them to your list!'}
             </Text>
             <TouchableOpacity
               style={styles.exploreBtn}
               onPress={() => navigate('SERVICE_LIST')}
             >
-              <Text style={styles.exploreBtnText}>Khám phá dịch vụ Đà Lạt ➔</Text>
+              <Text style={styles.exploreBtnText}>
+                {language === 'vi' ? 'Khám phá dịch vụ Đà Lạt ➔' : 'Explore Dalat Services ➔'}
+              </Text>
             </TouchableOpacity>
           </View>
         }

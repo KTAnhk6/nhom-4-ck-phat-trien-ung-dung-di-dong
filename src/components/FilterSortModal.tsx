@@ -24,7 +24,7 @@ interface FilterSortModalProps {
 }
 
 export const FilterSortModal: React.FC<FilterSortModalProps> = ({ visible, onClose }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { filter, setFilter, resetFilter, categories } = useTourism();
 
   // Temporary local state until "Apply" is tapped
@@ -42,11 +42,11 @@ export const FilterSortModal: React.FC<FilterSortModalProps> = ({ visible, onClo
   const ratingOptions = [0, 4.5, 4.0, 3.5];
 
   const priceRanges = [
-    { label: 'Tất cả mức giá', min: 0, max: 0 },
-    { label: 'Miễn phí', min: 0, max: 1 },
-    { label: 'Bình dân (< 100k)', min: 1, max: 100000 },
-    { label: 'Trung cấp (100k - 500k)', min: 100000, max: 500000 },
-    { label: 'Cao cấp (> 500k)', min: 500000, max: 50000000 },
+    { label: language === 'vi' ? 'Tất cả mức giá' : 'All Prices', min: 0, max: 0 },
+    { label: language === 'vi' ? 'Miễn phí' : 'Free', min: 0, max: 1 },
+    { label: language === 'vi' ? 'Bình dân (< 100k)' : 'Budget (< 100k)', min: 1, max: 100000 },
+    { label: language === 'vi' ? 'Trung cấp (100k - 500k)' : 'Mid-range (100k - 500k)', min: 100000, max: 500000 },
+    { label: language === 'vi' ? 'Cao cấp (> 500k)' : 'Luxury (> 500k)', min: 500000, max: 50000000 },
   ];
 
   const districtOptions = [
@@ -144,7 +144,7 @@ export const FilterSortModal: React.FC<FilterSortModalProps> = ({ visible, onClo
                     <Text
                       style={[styles.filterChipText, active && styles.filterChipTextActive]}
                     >
-                      {cat.icon} {cat.nameVi}
+                      {cat.icon} {language === 'vi' ? cat.nameVi : cat.name}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -184,7 +184,7 @@ export const FilterSortModal: React.FC<FilterSortModalProps> = ({ visible, onClo
                     onPress={() => setTempFilter(p => ({ ...p, minRating: r }))}
                   >
                     <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
-                      {r === 0 ? t('minRatingAny') : `★ ${r} trở lên`}
+                      {r === 0 ? t('minRatingAny') : `★ ${r} ${language === 'vi' ? 'trở lên' : '& up'}`}
                     </Text>
                   </TouchableOpacity>
                 );

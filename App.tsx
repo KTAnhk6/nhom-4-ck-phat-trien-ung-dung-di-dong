@@ -115,8 +115,22 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, Error
 
 const MainNavigator: React.FC = () => {
   const insets = useSafeAreaInsets();
-  const { currentScreen, goBack, isLoading } = useTourism();
-  const { currentUser, isAdmin, isLoading: authLoading } = useAuth();
+  const { currentScreen, goBack, isLoading, navigate, navigateToDetail } = useTourism();
+  const { currentUser, isAdmin, isLoading: authLoading, login, loginAsGuest, logout } = useAuth();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__APP_NAV__ = {
+        navigate,
+        navigateToDetail,
+        login,
+        loginAsGuest,
+        logout,
+        currentScreen,
+        currentUser,
+      };
+    }
+  }, [navigate, navigateToDetail, login, loginAsGuest, logout, currentScreen, currentUser]);
 
   // Android hardware back button handler
   useEffect(() => {
@@ -268,8 +282,8 @@ const MainNavigator: React.FC = () => {
       )}
 
       {showBottomNav && <BottomNav />}
-      {!isAdmin && <AppOpenAd />}
-      {!isAdmin && <InterstitialAd />}
+      {!isAdmin && !(typeof window !== 'undefined' && (window as any).__DISABLE_ADS__) && <AppOpenAd />}
+      {!isAdmin && !(typeof window !== 'undefined' && (window as any).__DISABLE_ADS__) && <InterstitialAd />}
     </View>
   );
 };

@@ -25,7 +25,7 @@ import { API_CONFIG, ADMOB_CONFIG } from '../../config/apiConfig';
 import { INITIAL_CATEGORIES, INITIAL_SERVICES } from '../../data/dalatData';
 
 export const AdminDashboardScreen: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { navigate, goBack, refreshData } = useTourism();
   const { currentUser } = useAuth();
 
@@ -89,7 +89,7 @@ export const AdminDashboardScreen: React.FC = () => {
     {
       id: 'ADMIN_SERVICES',
       title: t('manageServices'),
-      desc: 'Thêm, sửa, xóa các điểm đến, cà phê, homestay',
+      desc: language === 'vi' ? 'Thêm, sửa, xóa các điểm đến, cà phê, homestay' : 'Add, edit, delete attractions, cafes, homestays',
       icon: '🌲',
       color: colors.primary,
       count: stats?.totalServices || 0,
@@ -97,7 +97,7 @@ export const AdminDashboardScreen: React.FC = () => {
     {
       id: 'ADMIN_CATEGORIES',
       title: t('manageCategories'),
-      desc: 'Quản lý 5 danh mục chính và kiểm tra ràng buộc',
+      desc: language === 'vi' ? 'Quản lý 5 danh mục chính và kiểm tra ràng buộc' : 'Manage 5 main categories and check constraints',
       icon: '📁',
       color: colors.accent,
       count: stats?.totalCategories || 0,
@@ -105,7 +105,7 @@ export const AdminDashboardScreen: React.FC = () => {
     {
       id: 'ADMIN_USERS',
       title: t('manageUsers'),
-      desc: 'Danh sách thành viên, khóa/mở khóa tài khoản',
+      desc: language === 'vi' ? 'Danh sách thành viên, khóa/mở khóa tài khoản' : 'User list, lock/unlock accounts',
       icon: '👥',
       color: '#3B82F6',
       count: stats?.totalUsers || 0,
@@ -113,7 +113,7 @@ export const AdminDashboardScreen: React.FC = () => {
     {
       id: 'ADMIN_REVIEWS',
       title: t('manageReviews'),
-      desc: 'Kiểm duyệt nhận xét, ẩn/xóa đánh giá vi phạm',
+      desc: language === 'vi' ? 'Kiểm duyệt nhận xét, ẩn/xóa đánh giá vi phạm' : 'Moderate feedback, hide/delete violations',
       icon: '⭐',
       color: colors.star,
       count: stats?.totalReviews || 0,
@@ -121,7 +121,7 @@ export const AdminDashboardScreen: React.FC = () => {
     {
       id: 'ADMIN_STATS',
       title: t('adminStatistics'),
-      desc: 'Biểu đồ phân bố danh mục, đánh giá, top dịch vụ',
+      desc: language === 'vi' ? 'Biểu đồ phân bố danh mục, đánh giá, top dịch vụ' : 'Category distribution charts, ratings, top spots',
       icon: '📊',
       color: colors.secondary,
       count: `${stats?.averageRating || 5.0} ★`,
@@ -129,7 +129,7 @@ export const AdminDashboardScreen: React.FC = () => {
     {
       id: 'ADMIN_NOTIFICATIONS',
       title: t('broadcastNotification'),
-      desc: 'Phát sóng tin tức lễ hội, ưu đãi tới du khách',
+      desc: language === 'vi' ? 'Phát sóng tin tức lễ hội, ưu đãi tới du khách' : 'Broadcast festival news and special promotions',
       icon: '📢',
       color: '#8B5CF6',
       count: 'Broadcast',
@@ -146,7 +146,7 @@ export const AdminDashboardScreen: React.FC = () => {
         <View style={{ flex: 1, marginLeft: 10 }}>
           <Text style={styles.headerTitle}>{t('adminDashboard')}</Text>
           <Text style={styles.headerSubtitle}>
-            Xin chào {currentUser?.fullName || 'Admin'} • Phụ trách: Việt
+            {language === 'vi' ? 'Xin chào' : 'Hello'} {currentUser?.fullName || 'Admin'} • {language === 'vi' ? 'Phụ trách: Việt' : 'Assigned: Việt'}
           </Text>
         </View>
         <View style={styles.adminTag}>
@@ -158,28 +158,30 @@ export const AdminDashboardScreen: React.FC = () => {
       <View style={styles.statsRow}>
         <View style={[styles.statBox, shadows.subtle]}>
           <Text style={styles.statNumber}>{stats?.totalServices || 0}</Text>
-          <Text style={styles.statLabel}>Dịch vụ</Text>
+          <Text style={styles.statLabel}>{language === 'vi' ? 'Dịch vụ' : 'Services'}</Text>
         </View>
         <View style={[styles.statBox, shadows.subtle]}>
           <Text style={styles.statNumber}>{stats?.totalUsers || 0}</Text>
-          <Text style={styles.statLabel}>Người dùng</Text>
+          <Text style={styles.statLabel}>{language === 'vi' ? 'Người dùng' : 'Users'}</Text>
         </View>
         <View style={[styles.statBox, shadows.subtle]}>
           <Text style={styles.statNumber}>{stats?.totalReviews || 0}</Text>
-          <Text style={styles.statLabel}>Đánh giá</Text>
+          <Text style={styles.statLabel}>{language === 'vi' ? 'Đánh giá' : 'Reviews'}</Text>
         </View>
         <View style={[styles.statBox, shadows.subtle]}>
           <Text style={[styles.statNumber, { color: colors.star }]}>
             {stats?.averageRating || 5.0}★
           </Text>
-          <Text style={styles.statLabel}>Điểm TB</Text>
+          <Text style={styles.statLabel}>{language === 'vi' ? 'Điểm TB' : 'Avg Score'}</Text>
         </View>
       </View>
 
       {/* Tích hợp MockAPI & AdMob Status Card */}
       <View style={[styles.integrationCard, shadows.card]}>
         <View style={styles.integrationHeader}>
-          <Text style={styles.integrationTitle}>🔗 Tích hợp MockAPI & AdMob</Text>
+          <Text style={styles.integrationTitle}>
+            {language === 'vi' ? '🔗 Tích hợp MockAPI & AdMob' : '🔗 MockAPI & AdMob Integration'}
+          </Text>
           <View
             style={[
               styles.statusPill,
@@ -211,7 +213,9 @@ export const AdminDashboardScreen: React.FC = () => {
             {isTestingApi ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
-              <Text style={styles.btnActionText}>⚡ Kiểm tra API</Text>
+              <Text style={styles.btnActionText}>
+                {language === 'vi' ? '⚡ Kiểm tra API' : '⚡ Test API'}
+              </Text>
             )}
           </TouchableOpacity>
 
@@ -223,7 +227,9 @@ export const AdminDashboardScreen: React.FC = () => {
             {isSeeding ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
-              <Text style={styles.btnActionText}>🚀 Đẩy dữ liệu mẫu</Text>
+              <Text style={styles.btnActionText}>
+                {language === 'vi' ? '🚀 Đẩy dữ liệu mẫu' : '🚀 Seed Mock Data'}
+              </Text>
             )}
           </TouchableOpacity>
         </View>
@@ -231,13 +237,15 @@ export const AdminDashboardScreen: React.FC = () => {
         <View style={styles.admobInfoRow}>
           <Text style={styles.admobInfoText}>
             📢 <Text style={{ fontWeight: '700' }}>AdMob Status:</Text>{' '}
-            {ADMOB_CONFIG.IS_ENABLED ? 'Đang bật' : 'Đang tắt'} • Unit ID: Test Banner (320x50)
+            {ADMOB_CONFIG.IS_ENABLED ? (language === 'vi' ? 'Đang bật' : 'Enabled') : (language === 'vi' ? 'Đang tắt' : 'Disabled')} • Unit ID: Test Banner (320x50)
           </Text>
         </View>
       </View>
 
       {/* Admin Management Grid */}
-      <Text style={styles.sectionTitle}>Các chức năng quản lý hệ thống</Text>
+      <Text style={styles.sectionTitle}>
+        {language === 'vi' ? 'Các chức năng quản lý hệ thống' : 'System Administration Modules'}
+      </Text>
       <View style={styles.grid}>
         {adminModules.map(mod => (
           <TouchableOpacity

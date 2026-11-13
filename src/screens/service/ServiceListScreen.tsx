@@ -144,7 +144,7 @@ export const ServiceListScreen: React.FC = () => {
         </Text>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Text style={styles.sortIndicator}>
-            Sắp xếp: {filter?.sortBy || 'popular'} ▾
+            {language === 'vi' ? 'Sắp xếp' : 'Sort'}: {filter?.sortBy || 'popular'} ▾
           </Text>
         </TouchableOpacity>
       </View>
@@ -161,7 +161,9 @@ export const ServiceListScreen: React.FC = () => {
             <Text style={styles.emptyEmoji}>🌲🔍</Text>
             <Text style={styles.emptyTitle}>{t('serviceNotFound')}</Text>
             <Text style={styles.emptyDesc}>
-              Hãy thử thay đổi từ khóa tìm kiếm hoặc đặt lại các bộ lọc.
+              {language === 'vi'
+                ? 'Hãy thử thay đổi từ khóa tìm kiếm hoặc đặt lại các bộ lọc.'
+                : 'Try adjusting your search keywords or resetting the filters.'}
             </Text>
           </View>
         }

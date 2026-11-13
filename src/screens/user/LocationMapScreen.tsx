@@ -21,7 +21,7 @@ import { useTourism } from '../../context/TourismContext';
 import { TourismService } from '../../types';
 
 export const LocationMapScreen: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { services, goBack, navigateToDetail } = useTourism();
 
   const [selectedDistrict, setSelectedDistrict] = useState<string>('ALL');
@@ -36,7 +36,7 @@ export const LocationMapScreen: React.FC = () => {
   const handleOpenGoogleMaps = (srv: TourismService) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${srv.latitude},${srv.longitude}`;
     Linking.openURL(url).catch(() => {
-      alert(`Tọa độ: ${srv.latitude}, ${srv.longitude} (${srv.name})`);
+      alert(`${language === 'vi' ? 'Tọa độ' : 'Coords'}: ${srv.latitude}, ${srv.longitude} (${srv.name})`);
     });
   };
 
@@ -50,7 +50,7 @@ export const LocationMapScreen: React.FC = () => {
         <View style={{ flex: 1, marginLeft: 10 }}>
           <Text style={styles.headerTitle}>{t('mapTitle')}</Text>
           <Text style={styles.headerSubtitle}>
-            Tọa độ & Khoảng cách • Phụ trách: Minh Anh
+            {language === 'vi' ? 'Tọa độ & Khoảng cách • Phụ trách: Minh Anh' : 'Coordinates & Distance • Assigned: Minh Anh'}
           </Text>
         </View>
       </View>
@@ -61,10 +61,16 @@ export const LocationMapScreen: React.FC = () => {
           <Text style={{ fontSize: 22 }}>🎯</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.centerTitle}>Mốc trung tâm: Chợ Đà Lạt / Hồ Xuân Hương</Text>
-          <Text style={styles.centerCoords}>Tọa độ GPS: 11.9405° B, 108.4382° Đ</Text>
+          <Text style={styles.centerTitle}>
+            {language === 'vi' ? 'Mốc trung tâm: Chợ Đà Lạt / Hồ Xuân Hương' : 'Center Landmark: Dalat Market / Xuan Huong Lake'}
+          </Text>
+          <Text style={styles.centerCoords}>
+            {language === 'vi' ? 'Tọa độ GPS: 11.9405° B, 108.4382° Đ' : 'GPS Coordinates: 11.9405° N, 108.4382° E'}
+          </Text>
           <Text style={styles.centerNote}>
-            Tất cả khoảng cách bên dưới được tính chính xác từ tâm chợ Đà Lạt.
+            {language === 'vi'
+              ? 'Tất cả khoảng cách bên dưới được tính chính xác từ tâm chợ Đà Lạt.'
+              : 'All distances below are calculated accurately from Dalat Market center.'}
           </Text>
         </View>
       </View>
@@ -81,7 +87,7 @@ export const LocationMapScreen: React.FC = () => {
                 onPress={() => setSelectedDistrict(d)}
               >
                 <Text style={[styles.districtText, active && styles.districtTextActive]}>
-                  {d === 'ALL' ? 'Toàn Đà Lạt' : d}
+                  {d === 'ALL' ? (language === 'vi' ? 'Toàn Đà Lạt' : 'All Dalat') : d}
                 </Text>
               </TouchableOpacity>
             );
@@ -111,7 +117,9 @@ export const LocationMapScreen: React.FC = () => {
               </View>
               <View style={styles.distanceBox}>
                 <Text style={styles.distanceKm}>{item.distanceKm} km</Text>
-                <Text style={styles.distanceLabel}>từ trung tâm</Text>
+                <Text style={styles.distanceLabel}>
+                  {language === 'vi' ? 'từ trung tâm' : 'from center'}
+                </Text>
               </View>
             </View>
 
@@ -133,7 +141,9 @@ export const LocationMapScreen: React.FC = () => {
                   handleOpenGoogleMaps(item);
                 }}
               >
-                <Text style={styles.navBtnText}>🗺️ Chỉ đường</Text>
+                <Text style={styles.navBtnText}>
+                  {language === 'vi' ? '🗺️ Chỉ đường' : '🗺️ Directions'}
+                </Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>

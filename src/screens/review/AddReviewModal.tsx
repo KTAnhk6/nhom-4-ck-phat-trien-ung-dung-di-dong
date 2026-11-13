@@ -35,7 +35,7 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { currentUser, isGuest } = useAuth();
   const { addReview, navigate } = useTourism();
 
@@ -46,12 +46,14 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
   const handleSubmit = async () => {
     if (isGuest || currentUser?.role === 'guest') {
       Alert.alert(
-        'Chế độ Khách (Giới hạn tính năng)',
-        'Bạn đang duyệt ở chế độ Khách. Vui lòng đăng nhập hoặc đăng ký tài khoản để gửi đánh giá!',
+        language === 'vi' ? 'Chế độ Khách (Giới hạn tính năng)' : 'Guest Mode (Limited Feature)',
+        language === 'vi'
+          ? 'Bạn đang duyệt ở chế độ Khách. Vui lòng đăng nhập hoặc đăng ký tài khoản để gửi đánh giá!'
+          : 'You are browsing as a Guest. Please sign in or register an account to submit a review!',
         [
-          { text: 'Hủy', style: 'cancel' },
+          { text: language === 'vi' ? 'Hủy' : 'Cancel', style: 'cancel' },
           {
-            text: 'Đăng nhập ngay',
+            text: language === 'vi' ? 'Đăng nhập ngay' : 'Sign in now',
             onPress: () => {
               onClose();
               navigate('LOGIN');
@@ -63,7 +65,10 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
     }
 
     if (!comment.trim()) {
-      Alert.alert('Thông báo', 'Vui lòng nhập nội dung đánh giá của bạn');
+      Alert.alert(
+        language === 'vi' ? 'Thông báo' : 'Notice',
+        language === 'vi' ? 'Vui lòng nhập nội dung đánh giá của bạn' : 'Please enter your review content'
+      );
       return;
     }
 
@@ -73,7 +78,7 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
         serviceId,
         serviceName,
         userId: currentUser?.id || 'USR_GUEST',
-        userName: currentUser?.fullName || 'Khách Du Lịch',
+        userName: currentUser?.fullName || (language === 'vi' ? 'Khách Du Lịch' : 'Tourist Guest'),
         userAvatar:
           currentUser?.avatar ||
           'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
@@ -82,10 +87,16 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
       });
       setComment('');
       setRating(5);
-      Alert.alert('Cảm ơn bạn!', 'Đánh giá của bạn đã được ghi nhận.');
+      Alert.alert(
+        language === 'vi' ? 'Cảm ơn bạn!' : 'Thank you!',
+        language === 'vi' ? 'Đánh giá của bạn đã được ghi nhận.' : 'Your review has been recorded.'
+      );
       onSuccess();
     } catch (e) {
-      Alert.alert('Lỗi', 'Không thể gửi đánh giá, vui lòng thử lại');
+      Alert.alert(
+        language === 'vi' ? 'Lỗi' : 'Error',
+        language === 'vi' ? 'Không thể gửi đánh giá, vui lòng thử lại' : 'Could not submit review, please try again'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -109,10 +120,12 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
           {(isGuest || currentUser?.role === 'guest') && (
             <View style={{ backgroundColor: colors.warningLight, padding: 10, borderRadius: 3, marginBottom: 12, borderWidth: 1, borderColor: colors.warning }}>
               <Text style={{ fontSize: 11, fontWeight: '700', color: colors.warning, marginBottom: 2 }}>
-                ⚠️ TÀI KHOẢN KHÁCH BỊ GIỚI HẠN
+                {language === 'vi' ? '⚠️ TÀI KHOẢN KHÁCH BỊ GIỚI HẠN' : '⚠️ GUEST ACCOUNT RESTRICTED'}
               </Text>
               <Text style={{ fontSize: 11, color: colors.text, marginBottom: 8, lineHeight: 15 }}>
-                Bạn đang duyệt ở chế độ Khách. Vui lòng đăng nhập hoặc tạo tài khoản để gửi đánh giá điểm đến này.
+                {language === 'vi'
+                  ? 'Bạn đang duyệt ở chế độ Khách. Vui lòng đăng nhập hoặc tạo tài khoản để gửi đánh giá điểm đến này.'
+                  : 'You are browsing as Guest. Please sign in or create an account to review this destination.'}
               </Text>
               <TouchableOpacity
                 style={{ backgroundColor: colors.text, paddingVertical: 6, borderRadius: 2, alignItems: 'center' }}
@@ -121,7 +134,9 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
                   navigate('LOGIN');
                 }}
               >
-                <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '700' }}>ĐĂNG NHẬP NGAY →</Text>
+                <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '700' }}>
+                  {language === 'vi' ? 'ĐĂNG NHẬP NGAY →' : 'SIGN IN NOW →'}
+                </Text>
               </TouchableOpacity>
             </View>
           )}
@@ -136,16 +151,18 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
               onRatingChange={setRating}
             />
             <Text style={styles.starScoreHint}>
-              {rating === 5 && 'Tuyệt vời (5 sao)'}
-              {rating === 4 && 'Rất tốt (4 sao)'}
-              {rating === 3 && 'Bình thường (3 sao)'}
-              {rating === 2 && 'Chưa hài lòng (2 sao)'}
-              {rating === 1 && 'Rất tệ (1 sao)'}
+              {rating === 5 && (language === 'vi' ? 'Tuyệt vời (5 sao)' : 'Excellent (5 stars)')}
+              {rating === 4 && (language === 'vi' ? 'Rất tốt (4 sao)' : 'Very Good (4 stars)')}
+              {rating === 3 && (language === 'vi' ? 'Bình thường (3 sao)' : 'Average (3 stars)')}
+              {rating === 2 && (language === 'vi' ? 'Chưa hài lòng (2 sao)' : 'Poor (2 stars)')}
+              {rating === 1 && (language === 'vi' ? 'Rất tệ (1 sao)' : 'Terrible (1 star)')}
             </Text>
           </View>
 
           {/* Comment Input */}
-          <Text style={styles.commentLabel}>Nhận xét của bạn:</Text>
+          <Text style={styles.commentLabel}>
+            {language === 'vi' ? 'Nhận xét của bạn:' : 'Your review:'}
+          </Text>
           <TextInput
             style={styles.commentInput}
             placeholder={t('yourComment')}
@@ -168,7 +185,7 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
               disabled={isSubmitting}
             >
               <Text style={styles.submitText}>
-                {isSubmitting ? 'Đang gửi...' : t('submitReview')}
+                {isSubmitting ? (language === 'vi' ? 'Đang gửi...' : 'Submitting...') : t('submitReview')}
               </Text>
             </TouchableOpacity>
           </View>

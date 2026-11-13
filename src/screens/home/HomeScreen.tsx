@@ -130,8 +130,8 @@ export const HomeScreen: React.FC = () => {
             <Text style={styles.greetingTitle}>
               {currentUser
                 ? isGuest
-                  ? 'Kính chào, Khách'
-                  : `Kính chào, ${currentUser.fullName}`
+                  ? (language === 'vi' ? 'Kính chào, Khách' : 'Welcome, Guest')
+                  : `${language === 'vi' ? 'Kính chào' : 'Welcome'}, ${currentUser.fullName}`
                 : t('homeGreeting')}
             </Text>
             <Text style={styles.greetingSubtitle}>{t('appSlogan')}</Text>
@@ -172,7 +172,7 @@ export const HomeScreen: React.FC = () => {
               ? language === 'vi'
                 ? 'Đang cập nhật...'
                 : 'Updating...'
-              : `${weather.isLiveApi ? '🟢 Trực tiếp' : '🕒 Địa phương'} ${weather.updatedAtText} ↻`}
+              : `${weather.isLiveApi ? (language === 'vi' ? '🟢 Trực tiếp' : '🟢 Live') : (language === 'vi' ? '🕒 Địa phương' : '🕒 Local')} ${weather.updatedAtText} ↻`}
           </Text>
         </View>
 
@@ -290,7 +290,9 @@ export const HomeScreen: React.FC = () => {
             <Text style={styles.catName} numberOfLines={2}>
               {language === 'vi' ? cat.nameVi : cat.name}
             </Text>
-            <Text style={styles.catCount}>{cat.count || 0} dịch vụ</Text>
+            <Text style={styles.catCount}>
+              {cat.count || 0} {language === 'vi' ? 'dịch vụ' : 'places'}
+            </Text>
           </TouchableOpacity>
         ))}
       </DragScrollView>
@@ -342,12 +344,18 @@ export const HomeScreen: React.FC = () => {
         activeOpacity={0.85}
       >
         <View style={styles.aiBannerLeft}>
-          <Text style={styles.aiBannerTitle}>✨ Trợ Lý Du Lịch Đà Lạt AI</Text>
+          <Text style={styles.aiBannerTitle}>
+            {language === 'vi' ? '✨ Trợ Lý Du Lịch Đà Lạt AI' : '✨ Dalat Travel AI Assistant'}
+          </Text>
           <Text style={styles.aiBannerDesc}>
-            Mô tả sở thích (săn mây, ngắm hoàng hôn, ăn lẩu) để nhận gợi ý tức thì!
+            {language === 'vi'
+              ? 'Mô tả sở thích (săn mây, ngắm hoàng hôn, ăn lẩu) để nhận gợi ý tức thì!'
+              : 'Describe your preferences (cloud hunting, sunset, hotpot) for instant tips!'}
           </Text>
           <View style={styles.aiActionRow}>
-            <Text style={styles.aiActionBtn}>Trò chuyện ngay ➔</Text>
+            <Text style={styles.aiActionBtn}>
+              {language === 'vi' ? 'Trò chuyện ngay ➔' : 'Chat now ➔'}
+            </Text>
           </View>
         </View>
         <Text style={styles.aiBannerEmoji}>🤖🌲</Text>
@@ -369,14 +377,16 @@ export const HomeScreen: React.FC = () => {
 
       {/* 7. Dalat Curated Routes from Travel Handbook */}
       <View style={[styles.tipsCard, shadows.card]}>
-        <Text style={styles.tipsTitle}>🗺️ Gợi ý 3 cung đường khám phá tối ưu nhất</Text>
+        <Text style={styles.tipsTitle}>
+          {language === 'vi' ? '🗺️ Gợi ý 3 cung đường khám phá tối ưu nhất' : '🗺️ 3 Recommended Travel Routes'}
+        </Text>
         {RECOMMENDED_ROUTES.map(route => (
           <View key={route.id} style={{ marginBottom: 12 }}>
             <Text style={{ fontWeight: '700', fontSize: 13, color: colors.primaryDark }}>
               {route.name}
             </Text>
             <Text style={{ fontSize: 11, color: colors.textLight, marginTop: 2, marginBottom: 4 }}>
-              📍 Điểm qua: {route.waypoints.join(' ➔ ')}
+              📍 {language === 'vi' ? 'Điểm qua:' : 'Waypoints:'} {route.waypoints.join(' ➔ ')}
             </Text>
             {route.schedule.map((item, idx) => (
               <Text key={idx} style={{ fontSize: 11, color: colors.text, marginLeft: 6, lineHeight: 16 }}>

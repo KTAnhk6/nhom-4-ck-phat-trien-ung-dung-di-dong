@@ -26,7 +26,7 @@ interface ReviewListScreenProps {
 }
 
 export const ReviewListScreen: React.FC<ReviewListScreenProps> = ({ serviceId }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { services, goBack, currentScreen } = useTourism();
 
   const id = serviceId || currentScreen.serviceId;
@@ -49,13 +49,16 @@ export const ReviewListScreen: React.FC<ReviewListScreenProps> = ({ serviceId })
   if (!service) {
     return (
       <View style={styles.centerContainer}>
-        <Text>Không tìm thấy dịch vụ</Text>
+        <Text>{language === 'vi' ? 'Không tìm thấy dịch vụ' : 'Service not found'}</Text>
       </View>
     );
   }
 
-  // Calculate star breakdown (1 to 5 stars)
+  // Calculate star breakdown (1 to 5 stars) & accurate dynamic score
   const total = reviews.length;
+  const ratingSum = reviews.reduce((sum, r) => sum + r.rating, 0);
+  const avgRating = total > 0 ? Number((ratingSum / total).toFixed(1)) : (service.rating && service.reviewCount > 0 ? service.rating : 0);
+
   const starCounts = [5, 4, 3, 2, 1].map(stars => {
     const count = reviews.filter(r => Math.round(r.rating) === stars).length;
     const percent = total > 0 ? (count / total) * 100 : 0;
@@ -74,7 +77,7 @@ export const ReviewListScreen: React.FC<ReviewListScreenProps> = ({ serviceId })
             {t('customerReviews')}
           </Text>
           <Text style={styles.headerSubtitle} numberOfLines={1}>
-            {service.name} • Phụ trách: Minh Anh
+            {service.name} • {language === 'vi' ? 'Phụ trách: Minh Anh' : 'Assigned: Minh Anh'}
           </Text>
         </View>
       </View>
@@ -89,10 +92,10 @@ export const ReviewListScreen: React.FC<ReviewListScreenProps> = ({ serviceId })
             {/* Rating Summary Card */}
             <View style={[styles.summaryCard, shadows.card]}>
               <View style={styles.summaryLeft}>
-                <Text style={styles.summaryScore}>{service.rating.toFixed(1)}</Text>
-                <RatingStars rating={service.rating} size={16} />
+                <Text style={styles.summaryScore}>{avgRating > 0 ? avgRating.toFixed(1) : '0.0'}</Text>
+                <RatingStars rating={avgRating} size={16} />
                 <Text style={styles.summaryCount}>
-                  {reviews.length} {t('totalReviews')}
+                  {total} {t('totalReviews')}
                 </Text>
               </View>
 
@@ -142,7 +145,7 @@ export const ReviewListScreen: React.FC<ReviewListScreenProps> = ({ serviceId })
                 <View style={styles.starRow}>
                   <RatingStars rating={item.rating} size={12} />
                   <Text style={styles.dateText}>
-                    {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+                    {new Date(item.createdAt).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US')}
                   </Text>
                 </View>
               </View>

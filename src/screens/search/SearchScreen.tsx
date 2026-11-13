@@ -22,7 +22,7 @@ import { FilterSortModal } from '../../components/FilterSortModal';
 import { POPULAR_KEYWORDS } from '../../data/dalatData';
 
 export const SearchScreen: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     searchQuery,
     setSearchQuery,
@@ -96,7 +96,9 @@ export const SearchScreen: React.FC = () => {
         <ScrollView style={styles.suggestionsScroll} showsVerticalScrollIndicator={false}>
           {/* Member assignment badge */}
           <View style={styles.memberTag}>
-            <Text style={styles.memberTagText}>Module: Quang (Tìm kiếm, Lọc, Sắp xếp)</Text>
+            <Text style={styles.memberTagText}>
+              {language === 'vi' ? 'Phụ trách: Quang (Tìm kiếm, Lọc, Sắp xếp)' : 'Assigned: Quang (Search, Filter, Sort)'}
+            </Text>
           </View>
 
           {/* Search History */}
@@ -142,9 +144,13 @@ export const SearchScreen: React.FC = () => {
 
           {/* Dalat Scope Note */}
           <View style={styles.scopeBox}>
-            <Text style={styles.scopeTitle}>🌲 Tra cứu toàn diện dịch vụ Đà Lạt</Text>
+            <Text style={styles.scopeTitle}>
+              {language === 'vi' ? '🌲 Tra cứu toàn diện dịch vụ Đà Lạt' : '🌲 Comprehensive Dalat Travel Search'}
+            </Text>
             <Text style={styles.scopeDesc}>
-              Tìm kiếm nhanh quán cà phê hoàng hôn, điểm săn mây, homestay view thung lũng hoặc các món ngon đặc sản.
+              {language === 'vi'
+                ? 'Tìm kiếm nhanh quán cà phê hoàng hôn, điểm săn mây, homestay view thung lũng hoặc các món ngon đặc sản.'
+                : 'Quickly find sunset cafes, cloud-hunting spots, valley-view homestays, or local specialty dining.'}
             </Text>
           </View>
         </ScrollView>
@@ -153,7 +159,9 @@ export const SearchScreen: React.FC = () => {
         <View style={styles.resultsContainer}>
           <View style={styles.resultsHeader}>
             <Text style={styles.resultsCount}>
-              Tìm thấy {filteredServices.length} kết quả cho "{searchQuery}"
+              {language === 'vi'
+                ? `Tìm thấy ${filteredServices.length} kết quả cho "${searchQuery}"`
+                : `Found ${filteredServices.length} results for "${searchQuery}"`}
             </Text>
             <TouchableOpacity onPress={() => setModalVisible(true)}>
               <Text style={styles.sortLink}>{t('sortBy')} ▾</Text>
@@ -169,9 +177,13 @@ export const SearchScreen: React.FC = () => {
             ListEmptyComponent={
               <View style={styles.emptyResults}>
                 <Text style={styles.emptyEmoji}>🍃</Text>
-                <Text style={styles.emptyTitle}>Không tìm thấy kết quả phù hợp</Text>
+                <Text style={styles.emptyTitle}>
+                  {language === 'vi' ? 'Không tìm thấy kết quả phù hợp' : 'No matching results found'}
+                </Text>
                 <Text style={styles.emptyDesc}>
-                  Thử tìm kiếm với các từ khóa ngắn gọn hơn như: Túi Mơ To, Săn mây, Lẩu gà, Cà phê...
+                  {language === 'vi'
+                    ? 'Thử tìm kiếm với các từ khóa ngắn gọn hơn như: Túi Mơ To, Săn mây, Lẩu gà, Cà phê...'
+                    : 'Try shorter keywords like: Tui Mo To, Cloud hunting, Chicken hotpot, Coffee...'}
                 </Text>
               </View>
             }

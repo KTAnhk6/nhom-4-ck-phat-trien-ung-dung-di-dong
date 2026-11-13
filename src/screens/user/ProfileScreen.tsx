@@ -49,7 +49,7 @@ export const ProfileScreen: React.FC = () => {
           <View style={styles.userInfo}>
             <View style={styles.nameRow}>
               <Text style={styles.fullName}>
-                {isGuest ? 'Khách' : currentUser?.fullName}
+                {isGuest ? (language === 'vi' ? 'Khách' : 'Guest') : currentUser?.fullName}
               </Text>
               <View
                 style={[
@@ -77,7 +77,7 @@ export const ProfileScreen: React.FC = () => {
             </View>
             {isGuest ? (
               <Text style={styles.guestSubText}>
-                Chưa đăng nhập tài khoản
+                {language === 'vi' ? 'Chưa đăng nhập tài khoản' : 'Not signed in'}
               </Text>
             ) : (
               <>
@@ -103,7 +103,9 @@ export const ProfileScreen: React.FC = () => {
             onPress={handleLogout}
             activeOpacity={0.7}
           >
-            <Text style={styles.loginNavBtnText}>🔑 Đăng nhập tài khoản</Text>
+            <Text style={styles.loginNavBtnText}>
+              {language === 'vi' ? '🔑 Đăng nhập tài khoản' : '🔑 Sign in'}
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -112,14 +114,22 @@ export const ProfileScreen: React.FC = () => {
       {isAdmin && (
         <View style={[styles.sectionCard, styles.adminCard]}>
           <View style={styles.adminHeader}>
-            <Text style={styles.adminTitle}>⚙️ TRANG QUẢN TRỊ HỆ THỐNG</Text>
-            <Text style={styles.adminSubtitle}>Phân hệ quản lý toàn diện dành cho Quản trị viên</Text>
+            <Text style={styles.adminTitle}>
+              {language === 'vi' ? '⚙️ TRANG QUẢN TRỊ HỆ THỐNG' : '⚙️ SYSTEM MANAGEMENT ADMIN'}
+            </Text>
+            <Text style={styles.adminSubtitle}>
+              {language === 'vi'
+                ? 'Phân hệ quản lý toàn diện dành cho Quản trị viên'
+                : 'Comprehensive management dashboard for Administrators'}
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.adminEnterBtn}
             onPress={() => navigate('ADMIN_DASHBOARD')}
           >
-            <Text style={styles.adminEnterText}>MỞ DASHBOARD QUẢN TRỊ →</Text>
+            <Text style={styles.adminEnterText}>
+              {language === 'vi' ? 'MỞ DASHBOARD QUẢN TRỊ →' : 'OPEN ADMIN DASHBOARD →'}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -216,7 +226,7 @@ export const ProfileScreen: React.FC = () => {
           activeOpacity={0.8}
         >
           <Text style={styles.logoutText}>
-            🚪 {isGuest ? 'Quay lại màn hình Đăng nhập' : t('logout')}
+            🚪 {isGuest ? (language === 'vi' ? 'Quay lại màn hình Đăng nhập' : 'Back to Sign In') : t('logout')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -224,7 +234,9 @@ export const ProfileScreen: React.FC = () => {
       <View style={styles.footerInfo}>
         <Text style={styles.versionText}>ĐÀ LẠT WANDER • MODERN EDITORIAL 2026</Text>
         <Text style={styles.creditText}>
-          Phân công: Tuấn Anh (Auth) • Bình (Home) • Quang (Search) • Minh Anh (Review) • Việt (Admin)
+          {language === 'vi'
+            ? 'Phân công: Tuấn Anh (Auth) • Bình (Home) • Quang (Search) • Minh Anh (Review) • Việt (Admin)'
+            : 'Team: Tuấn Anh (Auth) • Bình (Home) • Quang (Search) • Minh Anh (Review) • Việt (Admin)'}
         </Text>
       </View>
     </ScrollView>

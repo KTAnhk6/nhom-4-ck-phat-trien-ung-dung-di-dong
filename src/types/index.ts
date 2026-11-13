@@ -94,6 +94,8 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   recommendedServices?: TourismService[];
+  contextCategory?: string;
+  contextTopic?: string;
 }
 
 export type SortOption =

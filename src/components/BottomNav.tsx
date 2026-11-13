@@ -14,13 +14,13 @@ import { useAuth } from '../context/AuthContext';
 import { ScreenName } from '../types';
 
 export const BottomNav: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { currentScreen, navigate } = useTourism();
   const { isAdmin, isGuest } = useAuth();
 
   const getProfileLabel = () => {
     if (isAdmin) return t('navAdmin');
-    if (isGuest) return 'Khách';
+    if (isGuest) return language === 'vi' ? 'Khách' : 'Guest';
     return t('navProfile');
   };
 

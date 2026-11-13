@@ -16,6 +16,7 @@ import { colors } from '../theme/colors';
 import { borderRadius, shadows, spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 import { useTourism } from '../context/TourismContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface ServiceCardProps {
   service: TourismService;
@@ -30,9 +31,15 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
 }) => {
   if (!service) return null;
 
-  const { navigateToDetail, isFavorite, toggleFavorite } = useTourism();
+  const { navigateToDetail, isFavorite, toggleFavorite, categories } = useTourism();
+  const { language } = useLanguage();
   const serviceId = String(service.id || '');
   const favorited = isFavorite(serviceId);
+
+  const matchedCat = categories?.find(c => c.id === service.categoryId);
+  const displayCategory = matchedCat
+    ? (language === 'vi' ? matchedCat.nameVi : matchedCat.name)
+    : (service.categoryName || (language === 'vi' ? 'Dịch vụ Đà Lạt' : 'Dalat Service'));
 
   const handleCardPress = () => {
     if (onPress) {
@@ -85,16 +92,16 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
 
         <View style={styles.hContent}>
           <Text style={styles.categoryPill} numberOfLines={1}>
-            {service.categoryName || 'Dịch vụ Đà Lạt'}
+            {displayCategory}
           </Text>
           <Text style={styles.hName} numberOfLines={1}>
-            {service.name || 'Điểm đến Đà Lạt'}
+            {service.name || (language === 'vi' ? 'Điểm đến Đà Lạt' : 'Dalat Destination')}
           </Text>
           <Text style={styles.locationText} numberOfLines={1}>
-            📍 {service.district || 'Đà Lạt'} • {service.distanceKm || 2.5} km
+            📍 {service.district || (language === 'vi' ? 'Đà Lạt' : 'Dalat')} • {service.distanceKm || 2.5} km
           </Text>
           <Text style={styles.priceText} numberOfLines={1}>
-            {service.priceDisplay || 'Đang cập nhật'}
+            {service.priceDisplay || (language === 'vi' ? 'Đang cập nhật' : 'Updating')}
           </Text>
         </View>
       </TouchableOpacity>
@@ -120,7 +127,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
       <View style={styles.listContent}>
         <View style={styles.topRow}>
           <Text style={styles.categoryPill} numberOfLines={1}>
-            {service.categoryName || 'Dịch vụ'}
+            {displayCategory}
           </Text>
           <TouchableOpacity
             style={styles.favBtnSmall}
@@ -134,19 +141,19 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
         </View>
 
         <Text style={styles.listName} numberOfLines={2}>
-          {service.name || 'Điểm đến Đà Lạt'}
+          {service.name || (language === 'vi' ? 'Điểm đến Đà Lạt' : 'Dalat Destination')}
         </Text>
 
         <Text style={styles.locationText} numberOfLines={1}>
-          📍 {service.district || 'Đà Lạt'} • {service.distanceKm || 2.5} km
+          📍 {service.district || (language === 'vi' ? 'Đà Lạt' : 'Dalat')} • {service.distanceKm || 2.5} km
         </Text>
 
         <View style={styles.bottomRow}>
           <Text style={styles.priceText} numberOfLines={1}>
-            {service.priceDisplay || 'Đang cập nhật'}
+            {service.priceDisplay || (language === 'vi' ? 'Đang cập nhật' : 'Updating')}
           </Text>
           <Text style={styles.reviewCountText}>
-            ({service.reviewCount || 0} đánh giá)
+            ({service.reviewCount || 0} {language === 'vi' ? 'đánh giá' : 'reviews'})
           </Text>
         </View>
       </View>

@@ -30,9 +30,10 @@ interface ServiceDetailScreenProps {
 }
 
 export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ serviceId }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     services,
+    categories,
     goBack,
     isFavorite,
     toggleFavorite,
@@ -45,8 +46,18 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
   const service = services.find(s => isSameServiceId(s.id, id));
   const favorited = service ? isFavorite(service.id) : false;
 
+  const matchedCat = categories?.find(c => c.id === service?.categoryId);
+  const displayCategoryName = matchedCat
+    ? (language === 'vi' ? matchedCat.nameVi : matchedCat.name)
+    : (service?.categoryName || (language === 'vi' ? 'Dịch vụ Đà Lạt' : 'Dalat Service'));
+
   const [reviews, setReviews] = useState<Review[]>([]);
   const scrollRef = useRef<ScrollView>(null);
+
+  const displayRating = reviews.length > 0
+    ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1))
+    : (service?.rating || 0);
+  const displayReviewCount = reviews.length > 0 ? reviews.length : (service?.reviewCount || 0);
 
   const relatedServices = useMemo(() => {
     if (!service) return [];
@@ -73,9 +84,13 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
   if (!service) {
     return (
       <View style={styles.errorCenter}>
-        <Text style={styles.errorTitle}>Không tìm thấy dịch vụ</Text>
+        <Text style={styles.errorTitle}>
+          {language === 'vi' ? 'Không tìm thấy dịch vụ' : 'Service not found'}
+        </Text>
         <TouchableOpacity style={styles.backBtnError} onPress={goBack}>
-          <Text style={styles.backBtnErrorText}>Quay lại</Text>
+          <Text style={styles.backBtnErrorText}>
+            {language === 'vi' ? 'Quay lại' : 'Go back'}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -84,7 +99,10 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
   const handleCall = () => {
     if (service.phone) {
       Linking.openURL(`tel:${service.phone}`).catch(() => {
-        Alert.alert('Liên hệ', `Số điện thoại: ${service.phone}`);
+        Alert.alert(
+          language === 'vi' ? 'Liên hệ' : 'Contact',
+          `${language === 'vi' ? 'Số điện thoại' : 'Phone'}: ${service.phone}`
+        );
       });
     }
   };
@@ -151,10 +169,10 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
           {/* Category Pill & Distance */}
           <View style={styles.tagRow}>
             <Text style={styles.categoryPill}>
-              {service.categoryName || 'Dịch vụ Đà Lạt'}
+              {displayCategoryName}
             </Text>
             <Text style={styles.distanceBadge}>
-              📍 Cách Chợ Đà Lạt {service.distanceKm} km
+              📍 {language === 'vi' ? `Cách Chợ Đà Lạt ${service.distanceKm} km` : `${service.distanceKm} km from Dalat Market`}
             </Text>
           </View>
 
@@ -167,9 +185,9 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
             onPress={() => navigateToReviews(service.id)}
             activeOpacity={0.7}
           >
-            <RatingStars rating={service.rating} size={18} showScore />
+            <RatingStars rating={displayRating} size={18} showScore />
             <Text style={styles.reviewCountLink}>
-              • {service.reviewCount} {t('customerReviews')} →
+              • {displayReviewCount} {t('customerReviews')} →
             </Text>
           </TouchableOpacity>
 
@@ -191,7 +209,9 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
             <View style={styles.addressLeft}>
               <Text style={styles.addressTitle}>{t('addressLabel')}:</Text>
               <Text style={styles.addressText}>{service.address}</Text>
-              <Text style={styles.districtText}>Khu vực: {service.district}</Text>
+              <Text style={styles.districtText}>
+                {language === 'vi' ? 'Khu vực' : 'District'}: {service.district}
+              </Text>
             </View>
             <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.8}>
               <Text style={styles.callIcon}>📞</Text>
@@ -215,10 +235,10 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
             <Text style={styles.mapShortcutIcon}>🌐</Text>
             <View style={{ flex: 1 }}>
               <Text style={[styles.mapShortcutTitle, { color: '#1E3A8A', fontWeight: '700' }]}>
-                Trang chủ chính thức
+                {language === 'vi' ? 'Trang chủ chính thức' : 'Official Website'}
               </Text>
               <Text style={[styles.mapShortcutCoords, { color: '#2563EB' }]} numberOfLines={1}>
-                {officialWebsiteUrl.replace(/^https?:\/\//, '')} • Cổng thông tin & Website
+                {officialWebsiteUrl.replace(/^https?:\/\//, '')} • {language === 'vi' ? 'Cổng thông tin & Website' : 'Portal & Official Info'}
               </Text>
             </View>
             <Text style={[styles.mapShortcutArrow, { color: '#1E3A8A' }]}>↗</Text>
@@ -240,7 +260,7 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
             <Text style={styles.mapShortcutIcon}>📍</Text>
             <View style={{ flex: 1 }}>
               <Text style={[styles.mapShortcutTitle, { color: '#0F5132', fontWeight: '700' }]}>
-                Mở Google Maps (Dẫn đường GPS)
+                {language === 'vi' ? 'Mở Google Maps (Dẫn đường GPS)' : 'Open Google Maps (GPS Navigation)'}
               </Text>
               <Text style={[styles.mapShortcutCoords, { color: '#198754' }]} numberOfLines={1}>
                 GPS: {service.latitude}, {service.longitude} • {service.address}
@@ -257,9 +277,13 @@ export const ServiceDetailScreen: React.FC<ServiceDetailScreenProps> = ({ servic
           >
             <Text style={styles.mapShortcutIcon}>🗺️</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.mapShortcutTitle}>Xem vị trí trên bản đồ Đà Lạt</Text>
+              <Text style={styles.mapShortcutTitle}>
+                {language === 'vi' ? 'Xem vị trí trên bản đồ Đà Lạt' : 'View on Dalat Map'}
+              </Text>
               <Text style={styles.mapShortcutCoords}>
-                Tọa độ: {service.latitude}, {service.longitude} (Cách Chợ Đà Lạt {service.distanceKm} km)
+                {language === 'vi'
+                  ? `Tọa độ: ${service.latitude}, ${service.longitude} (Cách Chợ Đà Lạt ${service.distanceKm} km)`
+                  : `Coords: ${service.latitude}, ${service.longitude} (${service.distanceKm} km from Dalat Market)`}
               </Text>
             </View>
             <Text style={styles.mapShortcutArrow}>➔</Text>

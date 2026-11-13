@@ -64,7 +64,9 @@ export const Header: React.FC<HeaderProps> = ({
                   style={styles.guestBadge}
                   onPress={() => navigate('LOGIN')}
                 >
-                  <Text style={styles.guestBadgeText}>KHÁCH</Text>
+                  <Text style={styles.guestBadgeText}>
+                    {language === 'vi' ? 'KHÁCH' : 'GUEST'}
+                  </Text>
                 </TouchableOpacity>
               ) : null}
             </View>

@@ -269,8 +269,8 @@ export const TourismProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return;
     }
 
-    // Nếu tắt quảng cáo AdMob trong config
-    if (!ADMOB_CONFIG.IS_ENABLED) {
+    // Nếu tắt quảng cáo AdMob trong config hoặc có cờ chụp ảnh màn hình báo cáo
+    if (!ADMOB_CONFIG.IS_ENABLED || (typeof window !== 'undefined' && (window as any).__DISABLE_ADS__)) {
       executeAction();
       return;
     }

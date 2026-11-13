@@ -26,7 +26,7 @@ import { chatbotService } from '../../services/chatbotService';
 import { DragScrollView } from '../../components/DragScrollView';
 
 export const DalatChatbotScreen: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { navigateToDetail } = useTourism();
   const flatListRef = useRef<FlatList>(null);
 
@@ -59,7 +59,8 @@ export const DalatChatbotScreen: React.FC = () => {
       timestamp: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setInput('');
     setIsTyping(true);
 
@@ -68,7 +69,7 @@ export const DalatChatbotScreen: React.FC = () => {
     }, 100);
 
     try {
-      const botResponse = await chatbotService.processUserMessage(query);
+      const botResponse = await chatbotService.processUserMessage(query, nextMessages);
       setMessages(prev => [...prev, botResponse]);
     } catch (e) {
       console.error('Chatbot error:', e);
@@ -118,7 +119,7 @@ export const DalatChatbotScreen: React.FC = () => {
           {item.recommendedServices && item.recommendedServices.length > 0 && (
             <View style={styles.recommendationWrap}>
               <Text style={styles.recommendationTitle}>
-                🎯 Gợi ý dành cho bạn:
+                {language === 'vi' ? '🎯 Gợi ý dành cho bạn:' : '🎯 Recommendations for you:'}
               </Text>
               {item.recommendedServices.map(srv => {
                 const imgUri =
@@ -144,7 +145,9 @@ export const DalatChatbotScreen: React.FC = () => {
                       <Text style={styles.recPrice} numberOfLines={1}>
                         {srv.priceDisplay}
                       </Text>
-                      <Text style={styles.recDetailBtn}>Xem chi tiết ➔</Text>
+                      <Text style={styles.recDetailBtn}>
+                        {language === 'vi' ? 'Xem chi tiết ➔' : 'View details ➔'}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 );
@@ -168,7 +171,7 @@ export const DalatChatbotScreen: React.FC = () => {
           <View>
             <Text style={styles.headerTitle}>{t('chatbotTitle')}</Text>
             <Text style={styles.headerSubtitle}>
-              {t('chatbotSubtitle')} • Phụ trách: Quang
+              {t('chatbotSubtitle')} • {language === 'vi' ? 'Phụ trách: Quang' : 'Assigned: Quang'}
             </Text>
           </View>
         </View>
@@ -208,7 +211,9 @@ export const DalatChatbotScreen: React.FC = () => {
       {isTyping && (
         <View style={styles.typingRow}>
           <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={styles.typingText}>Trợ lý AI đang tìm kiếm điểm đến phù hợp...</Text>
+          <Text style={styles.typingText}>
+            {language === 'vi' ? 'Trợ lý AI đang tìm kiếm điểm đến phù hợp...' : 'AI assistant is looking for matching destinations...'}
+          </Text>
         </View>
       )}
 

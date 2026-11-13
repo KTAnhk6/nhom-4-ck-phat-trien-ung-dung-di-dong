@@ -165,14 +165,16 @@ export const NotificationScreen: React.FC = () => {
         <View style={{ flex: 1, marginLeft: 10 }}>
           <Text style={styles.headerTitle}>{t('notificationsTitle')}</Text>
           <Text style={styles.headerSubtitle}>
-            Thông báo & Gợi ý du lịch • Phụ trách: Minh Anh
+            {language === 'vi' ? 'Thông báo & Gợi ý du lịch • Phụ trách: Minh Anh' : 'Notifications & Travel Tips • Assigned: Minh Anh'}
           </Text>
         </View>
         <TouchableOpacity
           style={styles.markReadBtn}
           onPress={markAllNotificationsRead}
         >
-          <Text style={styles.markReadText}>✓ Đã đọc</Text>
+          <Text style={styles.markReadText}>
+            {language === 'vi' ? '✓ Đã đọc' : '✓ Mark Read'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -217,10 +219,12 @@ export const NotificationScreen: React.FC = () => {
 
                 <View style={styles.bottomRow}>
                   <Text style={styles.timeText}>
-                    {new Date(item.timestamp).toLocaleDateString('vi-VN')}
+                    {new Date(item.timestamp).toLocaleDateString(language === 'vi' ? 'vi-VN' : 'en-US')}
                   </Text>
                   {item.linkServiceId && (
-                    <Text style={styles.linkText}>Xem điểm đến ➔</Text>
+                    <Text style={styles.linkText}>
+                      {language === 'vi' ? 'Xem điểm đến ➔' : 'View destination ➔'}
+                    </Text>
                   )}
                 </View>
               </View>

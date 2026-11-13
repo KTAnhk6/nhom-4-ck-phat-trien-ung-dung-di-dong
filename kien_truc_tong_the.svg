@@ -1,0 +1,256 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 860" width="1100" height="860" font-family="'Segoe UI', 'Plus Jakarta Sans', Roboto, Arial, sans-serif">
+  <defs>
+    <linearGradient id="headerPill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1E4E8C" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="layerBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F0F7FF" />
+      <stop offset="100%" stop-color="#E6F0FA" />
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1E3A8A" flood-opacity="0.08" />
+    </filter>
+    <filter id="pillShadow" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.18" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="860" fill="#FFFFFF" rx="12" />
+
+  <!-- ==================== 1. PRESENTATION LAYER ==================== -->
+  <g transform="translate(50, 38)">
+    <!-- Outer Layer Box -->
+    <rect x="0" y="18" width="1000" height="150" rx="20" fill="url(#layerBg)" stroke="#7BA7D7" stroke-width="2" filter="url(#cardShadow)" />
+    <!-- Layer Title Pill -->
+    <rect x="330" y="0" width="340" height="38" rx="19" fill="url(#headerPill)" filter="url(#pillShadow)" />
+    <text x="500" y="25" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="800" letter-spacing="0.8">PRESENTATION LAYER</text>
+
+    <!-- Card 1: Screens -->
+    <g transform="translate(24, 48)">
+      <rect width="300" height="98" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <!-- Phone Icon -->
+      <rect x="20" y="15" width="44" height="68" rx="7" fill="#1E4E8C" />
+      <rect x="24" y="22" width="36" height="50" rx="3" fill="#BAE6FD" />
+      <circle cx="42" cy="77" r="2.5" fill="#FFFFFF" />
+      <path d="M28 60 L36 48 L44 56 L50 50 L56 60 Z" fill="#2563EB" />
+      <circle cx="33" cy="34" r="4" fill="#3B82F6" />
+      <!-- Text -->
+      <text x="80" y="36" fill="#0F172A" font-size="16" font-weight="800">Screens (21 Màn hình)</text>
+      <text x="80" y="56" fill="#334155" font-size="12.5" font-weight="600">Auth • Trang chủ • 50 Dịch vụ</text>
+      <text x="80" y="74" fill="#475569" font-size="12" font-style="italic">Tìm kiếm • AI Chat • Review • Admin</text>
+    </g>
+
+    <!-- Card 2: Components -->
+    <g transform="translate(350, 48)">
+      <rect width="300" height="98" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <!-- UI Card Icon -->
+      <rect x="18" y="18" width="56" height="62" rx="8" fill="#FFFFFF" stroke="#60A5FA" stroke-width="1.5" />
+      <rect x="24" y="26" width="20" height="20" rx="4" fill="#3B82F6" />
+      <rect x="48" y="28" width="20" height="5" rx="2" fill="#93C5FD" />
+      <rect x="48" y="37" width="14" height="5" rx="2" fill="#BFDBFE" />
+      <rect x="24" y="54" width="44" height="6" rx="3" fill="#60A5FA" />
+      <rect x="24" y="65" width="32" height="6" rx="3" fill="#93C5FD" />
+      <!-- Text -->
+      <text x="88" y="36" fill="#0F172A" font-size="16" font-weight="800">Components (Tái sử dụng)</text>
+      <text x="88" y="56" fill="#334155" font-size="12.5" font-weight="600">ServiceCard • CategoryChip</text>
+      <text x="88" y="74" fill="#475569" font-size="12" font-style="italic">FilterSortModal • RatingStars • AdMob</text>
+    </g>
+
+    <!-- Card 3: Navigation & Theme -->
+    <g transform="translate(676, 48)">
+      <rect width="300" height="98" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <!-- Nav Bar Icon -->
+      <rect x="16" y="29" width="64" height="40" rx="8" fill="#FFFFFF" stroke="#60A5FA" stroke-width="1.5" />
+      <path d="M29 53 L29 45 L35 40 L41 45 L41 53 Z" fill="#1E4E8C" />
+      <circle cx="51" cy="46" r="5" fill="none" stroke="#1E4E8C" stroke-width="2.2" />
+      <line x1="55" y1="50" x2="58" y2="53" stroke="#1E4E8C" stroke-width="2.2" />
+      <circle cx="68" cy="44" r="3.5" fill="#1E4E8C" />
+      <path d="M62 54 C62 50 74 50 74 54 Z" fill="#1E4E8C" />
+      <!-- Text -->
+      <text x="92" y="36" fill="#0F172A" font-size="16" font-weight="800">Navigation &amp; Theme</text>
+      <text x="92" y="56" fill="#334155" font-size="12.5" font-weight="600">Header • BottomNav • FloatingChat</text>
+      <text x="92" y="74" fill="#475569" font-size="12" font-style="italic">Modern Editorial (Colors &amp; Fonts)</text>
+    </g>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <g transform="translate(550, 210)">
+    <path d="M-6 0 L6 0 L6 14 L14 14 L0 28 L-14 14 L-6 14 Z" fill="#1E4E8C" />
+  </g>
+
+  <!-- ==================== 2. STATE MANAGEMENT LAYER ==================== -->
+  <g transform="translate(50, 242)">
+    <!-- Outer Layer Box -->
+    <rect x="0" y="18" width="1000" height="145" rx="20" fill="url(#layerBg)" stroke="#7BA7D7" stroke-width="2" filter="url(#cardShadow)" />
+    <!-- Layer Title Pill -->
+    <rect x="300" y="0" width="400" height="38" rx="19" fill="url(#headerPill)" filter="url(#pillShadow)" />
+    <text x="500" y="25" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="800" letter-spacing="0.8">STATE MANAGEMENT LAYER</text>
+
+    <!-- Card 1: AuthContext -->
+    <g transform="translate(24, 48)">
+      <rect width="300" height="94" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <!-- Shield User Icon -->
+      <path d="M46 16 L68 24 L68 46 C68 62 46 74 46 74 C46 74 24 62 24 46 L24 24 Z" fill="#2563EB" />
+      <circle cx="46" cy="39" r="7" fill="#FFFFFF" />
+      <path d="M34 57 C34 49 58 49 58 57 Z" fill="#FFFFFF" />
+      <!-- Text -->
+      <text x="84" y="36" fill="#0F172A" font-size="16" font-weight="800">AuthContext</text>
+      <text x="84" y="56" fill="#334155" font-size="12.5" font-weight="600">Quản lý phiên đăng nhập</text>
+      <text x="84" y="74" fill="#475569" font-size="12" font-style="italic">Phân quyền RBAC (Admin/User/Guest)</text>
+    </g>
+
+    <!-- Card 2: LanguageContext -->
+    <g transform="translate(350, 48)">
+      <rect width="300" height="94" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <!-- Globe Icon -->
+      <circle cx="46" cy="46" r="24" fill="none" stroke="#1E4E8C" stroke-width="3" />
+      <ellipse cx="46" cy="46" rx="12" ry="24" fill="none" stroke="#1E4E8C" stroke-width="2.2" />
+      <line x1="22" y1="46" x2="70" y2="46" stroke="#1E4E8C" stroke-width="2.2" />
+      <line x1="26" y1="34" x2="66" y2="34" stroke="#1E4E8C" stroke-width="1.8" />
+      <line x1="26" y1="58" x2="66" y2="58" stroke="#1E4E8C" stroke-width="1.8" />
+      <!-- Text -->
+      <text x="84" y="36" fill="#0F172A" font-size="16" font-weight="800">LanguageContext</text>
+      <text x="84" y="56" fill="#334155" font-size="12.5" font-weight="600">Đa ngôn ngữ Việt / Anh (i18n)</text>
+      <text x="84" y="74" fill="#475569" font-size="12" font-style="italic">Chuyển đổi tức thì toàn ứng dụng</text>
+    </g>
+
+    <!-- Card 3: TourismContext -->
+    <g transform="translate(676, 48)">
+      <rect width="300" height="94" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <!-- Map Pin Icon -->
+      <polygon points="22,28 38,22 54,28 70,22 70,66 54,72 38,66 22,72" fill="#60A5FA" opacity="0.35" stroke="#1E4E8C" stroke-width="2" />
+      <path d="M46 16 C38 16 32 22 32 30 C32 41 46 54 46 54 C46 54 60 41 60 30 C60 22 54 16 46 16 Z" fill="#DC2626" />
+      <circle cx="46" cy="30" r="5" fill="#FFFFFF" />
+      <!-- Text -->
+      <text x="84" y="36" fill="#0F172A" font-size="16" font-weight="800">TourismContext</text>
+      <text x="84" y="56" fill="#334155" font-size="12.5" font-weight="600">50 Dịch vụ • Lọc • Yêu thích</text>
+      <text x="84" y="74" fill="#475569" font-size="12" font-style="italic">Điều hướng màn hình &amp; Thông báo</text>
+    </g>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <g transform="translate(550, 409)">
+    <path d="M-6 0 L6 0 L6 14 L14 14 L0 28 L-14 14 L-6 14 Z" fill="#1E4E8C" />
+  </g>
+
+  <!-- ==================== 3. SERVICE LAYER ==================== -->
+  <g transform="translate(50, 441)">
+    <!-- Outer Layer Box -->
+    <rect x="0" y="18" width="1000" height="150" rx="20" fill="url(#layerBg)" stroke="#7BA7D7" stroke-width="2" filter="url(#cardShadow)" />
+    <!-- Layer Title Pill -->
+    <rect x="350" y="0" width="300" height="38" rx="19" fill="url(#headerPill)" filter="url(#pillShadow)" />
+    <text x="500" y="25" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="800" letter-spacing="0.8">SERVICE LAYER</text>
+
+    <!-- Card 1: tourismService -->
+    <g transform="translate(20, 48)">
+      <rect width="184" height="98" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <circle cx="34" cy="34" r="16" fill="#2563EB" />
+      <text x="34" y="40" text-anchor="middle" fill="#FFFFFF" font-size="16">🌲</text>
+      <text x="58" y="38" fill="#0F172A" font-size="14.5" font-weight="800">tourismService</text>
+      <text x="16" y="64" fill="#334155" font-size="11.5" font-weight="600">• Tìm kiếm khử dấu</text>
+      <text x="16" y="81" fill="#475569" font-size="11.5">• Lọc, Sắp xếp &amp; CRUD</text>
+    </g>
+
+    <!-- Card 2: authService -->
+    <g transform="translate(214, 48)">
+      <rect width="184" height="98" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <circle cx="34" cy="34" r="16" fill="#1E4E8C" />
+      <text x="34" y="40" text-anchor="middle" fill="#FFFFFF" font-size="15">⚙️</text>
+      <text x="58" y="38" fill="#0F172A" font-size="14.5" font-weight="800">authService</text>
+      <text x="16" y="64" fill="#334155" font-size="11.5" font-weight="600">• Đăng nhập / Đăng ký</text>
+      <text x="16" y="81" fill="#475569" font-size="11.5">• OTP &amp; Khóa tài khoản</text>
+    </g>
+
+    <!-- Card 3: chatbotService -->
+    <g transform="translate(408, 48)">
+      <rect width="184" height="98" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <circle cx="34" cy="34" r="16" fill="#2563EB" />
+      <text x="34" y="40" text-anchor="middle" fill="#FFFFFF" font-size="16">🤖</text>
+      <text x="58" y="38" fill="#0F172A" font-size="14.5" font-weight="800">chatbotService</text>
+      <text x="16" y="64" fill="#334155" font-size="11.5" font-weight="600">• Xử lý ngôn ngữ AI</text>
+      <text x="16" y="81" fill="#475569" font-size="11.5">• Gợi ý 3 cung đường</text>
+    </g>
+
+    <!-- Card 4: weatherService -->
+    <g transform="translate(602, 48)">
+      <rect width="184" height="98" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <circle cx="34" cy="34" r="16" fill="#0284C7" />
+      <text x="34" y="40" text-anchor="middle" fill="#FFFFFF" font-size="15">⛅</text>
+      <text x="58" y="38" fill="#0F172A" font-size="14.5" font-weight="800">weatherService</text>
+      <text x="16" y="64" fill="#334155" font-size="11.5" font-weight="600">• Open-Meteo Live API</text>
+      <text x="16" y="81" fill="#475569" font-size="11.5">• Gợi ý theo 4 khung giờ</text>
+    </g>
+
+    <!-- Card 5: statsService -->
+    <g transform="translate(796, 48)">
+      <rect width="184" height="98" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <circle cx="34" cy="34" r="16" fill="#1D4ED8" />
+      <text x="34" y="40" text-anchor="middle" fill="#FFFFFF" font-size="15">📊</text>
+      <text x="58" y="38" fill="#0F172A" font-size="14.5" font-weight="800">statsService</text>
+      <text x="16" y="64" fill="#334155" font-size="11.5" font-weight="600">• Tính toán KPI hệ thống</text>
+      <text x="16" y="81" fill="#475569" font-size="11.5">• Biểu đồ phân bố Admin</text>
+    </g>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <g transform="translate(550, 613)">
+    <path d="M-6 0 L6 0 L6 14 L14 14 L0 28 L-14 14 L-6 14 Z" fill="#1E4E8C" />
+  </g>
+
+  <!-- ==================== 4. DATA LAYER ==================== -->
+  <g transform="translate(50, 645)">
+    <!-- Outer Layer Box -->
+    <rect x="0" y="18" width="1000" height="155" rx="20" fill="url(#layerBg)" stroke="#7BA7D7" stroke-width="2" filter="url(#cardShadow)" />
+    <!-- Layer Title Pill -->
+    <rect x="330" y="0" width="340" height="38" rx="19" fill="url(#headerPill)" filter="url(#pillShadow)" />
+    <text x="500" y="25" text-anchor="middle" fill="#FFFFFF" font-size="16" font-weight="800" letter-spacing="0.8">DATA &amp; STORAGE LAYER</text>
+
+    <!-- Card 1: MySQL / SQLite Relational DB -->
+    <g transform="translate(24, 48)">
+      <rect width="300" height="102" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <!-- Database Cylinder Icon -->
+      <ellipse cx="44" cy="30" rx="20" ry="8" fill="#2563EB" />
+      <path d="M24 30 L24 48 C24 52.5 33 56 44 56 C55 56 64 52.5 64 48 L64 30 Z" fill="#3B82F6" />
+      <ellipse cx="44" cy="30" rx="20" ry="8" fill="#60A5FA" />
+      <path d="M24 52 L24 70 C24 74.5 33 78 44 78 C55 78 64 74.5 64 70 L64 52 C64 56.5 55 60 44 60 C33 60 24 56.5 24 52 Z" fill="#1D4ED8" />
+      <!-- Text -->
+      <text x="78" y="34" fill="#0F172A" font-size="15.5" font-weight="800">MySQL / SQLite Engine</text>
+      <text x="78" y="54" fill="#334155" font-size="12" font-weight="600">mysqlApiService • mysqlVitePlugin</text>
+      <text x="78" y="72" fill="#475569" font-size="11.5" font-style="italic">8 bảng SQL &amp; xuất dalat_wander_mysql.sql</text>
+      <text x="78" y="89" fill="#1E4E8C" font-size="11" font-weight="700">REST Endpoint: /api/mysql/*</text>
+    </g>
+
+    <!-- Card 2: AsyncStorage & Local Cache -->
+    <g transform="translate(350, 48)">
+      <rect width="300" height="102" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <!-- Storage Stack Icon -->
+      <rect x="22" y="24" width="44" height="14" rx="4" fill="#2563EB" />
+      <circle cx="30" cy="31" r="2" fill="#FFFFFF" />
+      <rect x="22" y="42" width="44" height="14" rx="4" fill="#3B82F6" />
+      <circle cx="30" cy="49" r="2" fill="#FFFFFF" />
+      <rect x="22" y="60" width="44" height="14" rx="4" fill="#1D4ED8" />
+      <circle cx="30" cy="67" r="2" fill="#FFFFFF" />
+      <!-- Text -->
+      <text x="78" y="34" fill="#0F172A" font-size="15.5" font-weight="800">AsyncStorage (Cục bộ)</text>
+      <text x="78" y="54" fill="#334155" font-size="12" font-weight="600">storageService • dalatData.ts</text>
+      <text x="78" y="72" fill="#475569" font-size="11.5" font-style="italic">Lưu đệm phiên đăng nhập &amp; 50 tọa độ</text>
+      <text x="78" y="89" fill="#1E4E8C" font-size="11" font-weight="700">Hỗ trợ chế độ Offline Fallback</text>
+    </g>
+
+    <!-- Card 3: Cloud REST API -->
+    <g transform="translate(676, 48)">
+      <rect width="300" height="102" rx="14" fill="#DCEBFA" stroke="#B6D4F4" stroke-width="1.5" />
+      <!-- Cloud Icon -->
+      <path d="M32 64 L60 64 C66 64 70 60 70 54 C70 49 66 45 61 44 C60 35 52 28 43 28 C35 28 28 33 26 41 C21 42 18 46 18 52 C18 59 24 64 32 64 Z" fill="#2563EB" />
+      <text x="44" y="54" text-anchor="middle" fill="#FFFFFF" font-size="13" font-weight="800">API</text>
+      <!-- Text -->
+      <text x="80" y="34" fill="#0F172A" font-size="15.5" font-weight="800">Cloud API &amp; External</text>
+      <text x="80" y="54" fill="#334155" font-size="12" font-weight="600">mockApiService (MockAPI.io)</text>
+      <text x="80" y="72" fill="#475569" font-size="11.5" font-style="italic">Open-Meteo API • Google Maps GPS</text>
+      <text x="80" y="89" fill="#1E4E8C" font-size="11" font-weight="700">Cổng du lịch: visitlamdong.vn</text>
+    </g>
+  </g>
+</svg>
+
